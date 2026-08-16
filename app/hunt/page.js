@@ -28,6 +28,7 @@ import {
   Radio,
   SlidersHorizontal,
   Globe,
+  Clock,
   X
 } from 'lucide-react';
 
@@ -464,6 +465,26 @@ export default function AqionHuntingPortal() {
                         >
                           {lead.match_score}% MATCH
                         </span>
+
+                        {lead.lead_age && (
+                          <span
+                            style={{
+                              background: 'rgba(210, 163, 86, 0.12)',
+                              color: '#9e6e18',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              border: '1px solid rgba(210, 163, 86, 0.3)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontFamily: 'var(--font-mono, monospace)'
+                            }}
+                          >
+                            <Clock size={11} /> {lead.lead_age}
+                          </span>
+                        )}
                         
                         {/* Direct Clickable Source Portal Link */}
                         <a
@@ -939,10 +960,31 @@ export default function AqionHuntingPortal() {
               <X size={18} />
             </button>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <span style={{ fontSize: '11px', background: 'rgba(81, 69, 229, 0.1)', color: 'var(--violet)', fontWeight: 700, padding: '3px 8px', borderRadius: '6px' }}>
                 {selectedLead.match_score}% MATCH
               </span>
+
+              {selectedLead.lead_age && (
+                <span
+                  style={{
+                    background: 'rgba(210, 163, 86, 0.12)',
+                    color: '#9e6e18',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    padding: '3px 8px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(210, 163, 86, 0.3)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontFamily: 'var(--font-mono, monospace)'
+                  }}
+                >
+                  <Clock size={11} /> {selectedLead.lead_age}
+                </span>
+              )}
+
               <a
                 href={selectedLead.source_url}
                 target="_blank"
