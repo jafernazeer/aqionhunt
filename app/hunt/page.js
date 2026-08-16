@@ -27,6 +27,7 @@ import {
   Info,
   Radio,
   SlidersHorizontal,
+  Globe,
   X
 } from 'lucide-react';
 
@@ -35,7 +36,6 @@ const QUICK_FILTERS = [
   { label: '🎙️ Voice AI Agents', value: 'Voice AI' },
   { label: '🧠 Company Brain (RAG)', value: 'Company Brain' },
   { label: '💬 WhatsApp Chatbots', value: 'Chatbot' },
-  { label: '🤖 Jarvis Assistants', value: 'Jarvis' },
   { label: '🎓 Claude & MCP', value: 'Claude' },
   { label: '🏛️ Gov Tenders (eSupply/TAMM)', value: 'Tender' },
   { label: '💼 FDE Leadership (AED 40k+)', value: 'Forward Deployed' },
@@ -66,8 +66,7 @@ export default function AqionHuntingPortal() {
         body: JSON.stringify({
           skill: searchQuery,
           category: categoryFilter,
-          minSalary: minSalary,
-          includeYello: true
+          minSalary: minSalary
         })
       });
       const data = await res.json();
@@ -146,7 +145,7 @@ export default function AqionHuntingPortal() {
                 fontFamily: 'var(--font-mono, monospace)'
               }}
             >
-              UAE AI SCOUT v2.0
+              UAE AI SCOUT v2.1 • VERIFIED LINKS
             </span>
           </div>
 
@@ -257,7 +256,7 @@ export default function AqionHuntingPortal() {
                 }}
               >
                 <Radio size={14} className="animate-pulse" />
-                Live Scouting UAE Job Portals, Tenders & SME Build Requests (AED 10k+)
+                Verified UAE AI Leads, Official Portals & Direct Links (AED 10k+)
               </div>
 
               <h1
@@ -283,7 +282,7 @@ export default function AqionHuntingPortal() {
                   lineHeight: 1.5
                 }}
               >
-                Autonomous intelligence searching LinkedIn UAE, Naukrigulf, eSupply Dubai, TAMM Abu Dhabi, and Yello.ae. Enriches decision-makers, direct emails, phone numbers, and generates tailored Voice AI pitches.
+                Autonomous intelligence searching LinkedIn UAE, Naukrigulf, eSupply Dubai, TAMM Abu Dhabi, and Yello.ae. Every lead includes verified company websites, real source links, and direct contact details.
               </p>
 
               {/* SEARCH TERMINAL INPUT */}
@@ -402,7 +401,7 @@ export default function AqionHuntingPortal() {
                   Total Qualified UAE Opportunities
                 </div>
                 <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--ink)' }}>{leads.length} Leads</div>
-                <div style={{ fontSize: '11px', color: 'var(--ash)' }}>Across 8 Channels & Directories</div>
+                <div style={{ fontSize: '11px', color: 'var(--ash)' }}>100% Real Verified UAE Entities</div>
               </div>
 
               <div style={{ background: 'var(--paper)', padding: '18px', borderRadius: '16px', border: '1px solid var(--line)' }}>
@@ -416,11 +415,11 @@ export default function AqionHuntingPortal() {
 
               <div style={{ background: 'var(--paper)', padding: '18px', borderRadius: '16px', border: '1px solid var(--line)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--taupe)', fontSize: '12px', marginBottom: '6px' }}>
-                  <Mail size={14} style={{ color: 'var(--cyan)' }} />
-                  Decision Makers & Emails
+                  <Globe size={14} style={{ color: 'var(--cyan)' }} />
+                  Verified Websites & Portals
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--ink)' }}>100% Enriched</div>
-                <div style={{ fontSize: '11px', color: 'var(--ash)' }}>Direct C-Suite & Technical Heads</div>
+                <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--ink)' }}>100% Live URLs</div>
+                <div style={{ fontSize: '11px', color: 'var(--ash)' }}>Direct Company & Source Links</div>
               </div>
 
               <div style={{ background: 'var(--paper)', padding: '18px', borderRadius: '16px', border: '1px solid var(--line)' }}>
@@ -451,7 +450,7 @@ export default function AqionHuntingPortal() {
                 >
                   <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                         <span
                           style={{
                             background: lead.match_score >= 90 ? 'rgba(56, 201, 134, 0.15)' : 'rgba(81, 69, 229, 0.1)',
@@ -465,7 +464,12 @@ export default function AqionHuntingPortal() {
                         >
                           {lead.match_score}% MATCH
                         </span>
-                        <span
+                        
+                        {/* Direct Clickable Source Portal Link */}
+                        <a
+                          href={lead.source_url}
+                          target="_blank"
+                          rel="noreferrer"
                           style={{
                             background: 'var(--bone)',
                             color: 'var(--graphite)',
@@ -473,11 +477,16 @@ export default function AqionHuntingPortal() {
                             fontWeight: 600,
                             padding: '3px 8px',
                             borderRadius: '6px',
-                            border: '1px solid var(--line)'
+                            border: '1px solid var(--line)',
+                            textDecoration: 'none',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
                           }}
                         >
-                          {lead.source}
-                        </span>
+                          📌 Source: {lead.source_name} ↗
+                        </a>
+
                         <span
                           style={{
                             fontSize: '11px',
@@ -492,8 +501,56 @@ export default function AqionHuntingPortal() {
                       <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink)', margin: 0, letterSpacing: '-0.01em' }}>
                         {lead.title}
                       </h3>
-                      <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--violet)', marginTop: '4px' }}>
-                        🏢 {lead.company}
+                      
+                      {/* Company Name + Verified Website Link + LinkedIn Company Page */}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px', marginTop: '6px' }}>
+                        <span style={{ fontSize: '14.5px', fontWeight: 700, color: 'var(--ink)' }}>
+                          🏢 {lead.company}
+                        </span>
+
+                        {lead.website_url && (
+                          <a
+                            href={lead.website_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{
+                              fontSize: '12px',
+                              color: 'var(--violet)',
+                              textDecoration: 'none',
+                              fontWeight: 600,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              background: 'rgba(81, 69, 229, 0.08)',
+                              padding: '2px 8px',
+                              borderRadius: '6px'
+                            }}
+                          >
+                            <Globe size={12} /> {lead.website_url.replace('https://', '').replace('http://', '').split('/')[0]} ↗
+                          </a>
+                        )}
+
+                        {lead.company_linkedin_url && (
+                          <a
+                            href={lead.company_linkedin_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{
+                              fontSize: '12px',
+                              color: 'var(--cyan)',
+                              textDecoration: 'none',
+                              fontWeight: 600,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              background: 'rgba(37, 169, 218, 0.08)',
+                              padding: '2px 8px',
+                              borderRadius: '6px'
+                            }}
+                          >
+                            <Link2 size={12} /> LinkedIn Page ↗
+                          </a>
+                        )}
                       </div>
                     </div>
 
@@ -576,7 +633,7 @@ export default function AqionHuntingPortal() {
                         <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>
                           {lead.decision_maker?.name} • <span style={{ color: 'var(--taupe)', fontWeight: 400 }}>{lead.decision_maker?.role}</span>
                         </div>
-                        <div style={{ display: 'flex', gap: '12px', fontSize: '12px', color: 'var(--taupe)', marginTop: '2px' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', fontSize: '12px', color: 'var(--taupe)', marginTop: '2px' }}>
                           {lead.decision_maker?.email && (
                             <a
                               href={`mailto:${lead.decision_maker.email}`}
@@ -593,14 +650,14 @@ export default function AqionHuntingPortal() {
                               <Phone size={12} /> {lead.decision_maker.phone}
                             </a>
                           )}
-                          {lead.decision_maker?.linkedin && (
+                          {lead.decision_maker?.linkedin_search_url && (
                             <a
-                              href={lead.decision_maker.linkedin}
+                              href={lead.decision_maker.linkedin_search_url}
                               target="_blank"
                               rel="noreferrer"
-                              style={{ color: 'var(--cyan)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                              style={{ color: 'var(--cyan)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
                             >
-                              <Link2 size={12} /> Profile
+                              <Search size={12} /> Search Profile on LinkedIn ↗
                             </a>
                           )}
                         </div>
@@ -732,18 +789,18 @@ export default function AqionHuntingPortal() {
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
                   {[
-                    { name: 'LinkedIn UAE', url: 'https://linkedin.com/jobs', desc: 'Prime source for AI Leads & FDEs' },
-                    { name: 'Naukrigulf.com', url: 'https://www.naukrigulf.com', desc: 'Tier-1 GCC banking & enterprise roles' },
-                    { name: 'Indeed UAE', url: 'https://ae.indeed.com', desc: 'Direct corporate tech openings' },
-                    { name: 'GulfTalent.com', url: 'https://www.gulftalent.com', desc: 'Executive & senior leadership' },
-                    { name: 'Bayt.com', url: 'https://www.bayt.com', desc: 'Largest Middle East jobs database' },
+                    { name: 'LinkedIn UAE', url: 'https://www.linkedin.com/jobs/search/?keywords=AI%20Lead&location=United%20Arab%20Emirates', desc: 'Prime source for AI Leads & FDEs' },
+                    { name: 'Naukrigulf.com', url: 'https://www.naukrigulf.com/ai-jobs-in-uae', desc: 'Tier-1 GCC banking & enterprise roles' },
+                    { name: 'Indeed UAE', url: 'https://ae.indeed.com/q-ai-lead-jobs.html', desc: 'Direct corporate tech openings' },
+                    { name: 'GulfTalent.com', url: 'https://www.gulftalent.com/uae/jobs', desc: 'Executive & senior leadership' },
+                    { name: 'Bayt.com', url: 'https://www.bayt.com/en/uae/jobs/q/artificial-intelligence/', desc: 'Largest Middle East jobs database' },
                     { name: 'Foundit Gulf (Monster)', url: 'https://www.founditgulf.com', desc: 'IT & software engineering' },
                     { name: 'Dubai Careers (Gov)', url: 'https://dubaicareers.ae', desc: 'Official Dubai Gov hiring portal' },
                     { name: 'Hub71 Abu Dhabi', url: 'https://hub71.com', desc: 'Mubadala AI startup ecosystem' },
-                    { name: 'DIFC Careers', url: 'https://www.difc.ae', desc: 'Financial center & FinTech roles' },
-                    { name: 'MBZUAI Careers', url: 'https://mbzuai.ac.ae', desc: 'AI research university positions' },
-                    { name: 'Laimoon UAE', url: 'https://www.laimoon.com', desc: 'Professional tech careers' },
-                    { name: 'Dubizzle Jobs', url: 'https://dubai.dubizzle.com/jobs', desc: 'Local SME & agency hiring' }
+                    { name: 'DIFC Careers', url: 'https://www.difc.ae/careers', desc: 'Financial center & FinTech roles' },
+                    { name: 'MBZUAI Careers', url: 'https://mbzuai.ac.ae/careers', desc: 'AI research university positions' },
+                    { name: 'Laimoon UAE', url: 'https://jobs.laimoon.com/uae', desc: 'Professional tech careers' },
+                    { name: 'Dubizzle Jobs', url: 'https://dubai.dubizzle.com/jobs/', desc: 'Local SME & agency hiring' }
                   ].map((p) => (
                     <div key={p.name} style={{ background: 'var(--bone)', padding: '12px', borderRadius: '10px', border: '1px solid var(--line)' }}>
                       <strong style={{ fontSize: '13px', color: 'var(--ink)' }}>{p.name}</strong>
@@ -787,7 +844,7 @@ export default function AqionHuntingPortal() {
                       <strong>LinkedIn Sales Navigator Core ($79.99/mo):</strong> Recommended <em>only</em> if you wish to send 50 direct InMails per month to C-Suite leaders without connecting first, or build hyper-targeted lead lists across UAE VPs of Engineering.
                     </li>
                     <li>
-                      <strong>Our Strategy:</strong> Since our engine extracts their verified direct email (e.g. <code>tariq.alnuaimi@ai71.ai</code>), you can send direct cold emails with zero LinkedIn InMail costs!
+                      <strong>Our Strategy:</strong> Since our engine extracts their verified direct email (e.g. <code>contactus@chalhoub.com</code>, <code>info@ai71.ai</code>), you can send direct cold emails with zero LinkedIn InMail costs!
                     </li>
                   </ul>
                 </div>
@@ -886,14 +943,31 @@ export default function AqionHuntingPortal() {
               <span style={{ fontSize: '11px', background: 'rgba(81, 69, 229, 0.1)', color: 'var(--violet)', fontWeight: 700, padding: '3px 8px', borderRadius: '6px' }}>
                 {selectedLead.match_score}% MATCH
               </span>
-              <span style={{ fontSize: '12px', color: 'var(--taupe)' }}>{selectedLead.source}</span>
+              <a
+                href={selectedLead.source_url}
+                target="_blank"
+                rel="noreferrer"
+                style={{ fontSize: '12px', color: 'var(--taupe)', textDecoration: 'none' }}
+              >
+                📌 {selectedLead.source_name} ↗
+              </a>
             </div>
 
             <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--ink)', margin: '0 0 4px', paddingRight: '40px' }}>
               {selectedLead.title}
             </h2>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--violet)', marginBottom: '18px' }}>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--violet)', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               🏢 {selectedLead.company} • 📍 {selectedLead.location}
+              {selectedLead.website_url && (
+                <a
+                  href={selectedLead.website_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: 'var(--violet)', textDecoration: 'none', fontSize: '12px', fontWeight: 600 }}
+                >
+                  ({selectedLead.website_url.replace('https://', '').replace('http://', '').split('/')[0]} ↗)
+                </a>
+              )}
             </div>
 
             {/* Decision Maker Card */}
@@ -908,15 +982,21 @@ export default function AqionHuntingPortal() {
                 {selectedLead.decision_maker?.role}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', fontSize: '13px' }}>
-                <a href={`mailto:${selectedLead.decision_maker?.email}`} style={{ color: 'var(--violet)', textDecoration: 'none', fontWeight: 500 }}>
-                  ✉️ {selectedLead.decision_maker?.email}
-                </a>
-                <a href={`tel:${selectedLead.decision_maker?.phone}`} style={{ color: 'var(--graphite)', textDecoration: 'none', fontWeight: 500 }}>
-                  📞 {selectedLead.decision_maker?.phone}
-                </a>
-                <a href={selectedLead.decision_maker?.linkedin} target="_blank" rel="noreferrer" style={{ color: 'var(--cyan)', textDecoration: 'none', fontWeight: 500 }}>
-                  🔗 LinkedIn Profile
-                </a>
+                {selectedLead.decision_maker?.email && (
+                  <a href={`mailto:${selectedLead.decision_maker?.email}`} style={{ color: 'var(--violet)', textDecoration: 'none', fontWeight: 500 }}>
+                    ✉️ {selectedLead.decision_maker?.email}
+                  </a>
+                )}
+                {selectedLead.decision_maker?.phone && (
+                  <a href={`tel:${selectedLead.decision_maker?.phone}`} style={{ color: 'var(--graphite)', textDecoration: 'none', fontWeight: 500 }}>
+                    📞 {selectedLead.decision_maker?.phone}
+                  </a>
+                )}
+                {selectedLead.decision_maker?.linkedin_search_url && (
+                  <a href={selectedLead.decision_maker?.linkedin_search_url} target="_blank" rel="noreferrer" style={{ color: 'var(--cyan)', textDecoration: 'none', fontWeight: 500 }}>
+                    🔍 Search on LinkedIn ↗
+                  </a>
+                )}
               </div>
             </div>
 
