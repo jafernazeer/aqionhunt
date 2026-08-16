@@ -1,0 +1,36 @@
+{
+  "personal_info": {
+    "name": "Mohammed Jafer",
+    "title": "AI Product Leader & Solutions Architect",
+    "location": "Dubai, UAE",
+    "residency_status": "UAE Resident (Valid UAE License, Immediate On-Ground Availability)",
+    "email": "mohammedjafer123@outlook.com",
+    "phone": "+971588499663",
+    "linkedin": "https://www.linkedin.com/in/jafermohammed",
+    "portfolio": "https://aqionlabs.ai"
+  },
+  "current_role": {
+    "title": "Head of AI, Founder",
+    "company": "AqionLabs.ai",
+    "duration": "Jan 2026 – Present",
+    "location": "Dubai, UAE",
+    "core_focus": "Agentic AI Architectures, Enterprise Conversational & Voice AI, Multilingual LLM Workflows (Arabic/English/Hindi)"
+  },
+  "value_propositions": {
+    "voice_ai_superpower": "Architected and shipped low-latency production Voice AI agents (<600ms latency) handling complex, multilingual customer journeys across healthcare, real estate, and finance in UAE.",
+    "enterprise_bridge": "9+ years deep enterprise infrastructure pedigree (Avaya Aura, Cisco UC, SIP, WebRTC, VMware, Kubernetes, Cloud) bridging legacy telecom with cutting-edge Agentic LLMs and MCP servers.",
+    "fde_capability": "Proven track record acting as Forward Deployed Engineer / Solutions Architect leading customer discovery, custom POC builds, high-stakes client technical demos, and production integrations for Tier-1 accounts (Tesla, UPS, Disney, Bank of America, American Hospital Dubai).",
+    "llmops_readiness": "Full-stack LLMOps practitioner: Prompt engineering, function calling, structured outputs, RAG vector search, AI guardrails, evaluation suites, and observability."
+  },
+  "target_roles": [
+    "Forward Deployed Engineer (FDE) - AI / LLM",
+    "AI Product Lead / AI Engineering Manager",
+    "AI Solutions Architect / Principal AI Architect",
+    "GenAI Delivery Lead / Enterprise AI Consultant"
+  ],
+  "target_compensation": {
+    "currency": "AED",
+    "monthly_range": "35,000 - 60,000",
+    "annual_equivalent_usd": "$115,000 - $200,000 (Tax Free)"
+  }
+}

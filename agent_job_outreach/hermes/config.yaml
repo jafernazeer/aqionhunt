@@ -1,0 +1,24 @@
+# Hermes Agent Job Outreach Profile Configuration
+model:
+  default: "anthropic/claude-3-7-sonnet"
+  provider: "openrouter" # or anthropic / openai
+
+agent:
+  max_turns: 40
+  tool_use_enforcement: true
+
+skills:
+  - "uae-ai-job-hunter"
+  - "web"
+  - "browser"
+  - "file"
+  - "messaging"
+
+security:
+  redact_secrets: true
+  approvals:
+    mode: "smart"
+
+gateway:
+  notify_on_high_priority_leads: true
+  min_match_threshold: 85

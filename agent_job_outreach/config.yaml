@@ -1,0 +1,113 @@
+# Autonomous UAE AI Job & Project Outreach Agent Configuration
+version: "2.0.0"
+
+search_filters:
+  target_locations:
+    - "Dubai, United Arab Emirates"
+    - "Abu Dhabi, United Arab Emirates"
+    - "United Arab Emirates (Remote / Hybrid / On-Site)"
+  
+  keywords:
+    leadership_and_fde:
+      - "Forward Deployed Engineer"
+      - "Forward Deployed AI"
+      - "AI Lead"
+      - "Head of AI"
+      - "AI Solutions Architect"
+      - "GenAI Consultant"
+      - "AI Delivery Manager"
+      - "AI Engineering Manager"
+    
+    agentic_build_requests:
+      - "Voice AI agent"
+      - "Company brain"
+      - "Company chatbot"
+      - "Personal AI assistant"
+      - "Jarvis AI"
+      - "Claude training"
+      - "Claude prompt engineering"
+      - "MCP Servers"
+      - "WhatsApp AI agent"
+      - "Enterprise RAG"
+      - "Autonomous Agents"
+
+  platforms:
+    - name: "linkedin"
+      enabled: true
+    - name: "naukrigulf"
+      enabled: true
+    - name: "indeed"
+      enabled: true
+    - name: "gulftalent"
+      enabled: true
+    - name: "bayt"
+      enabled: true
+
+  compensation_filter:
+    currency: "AED"
+    min_monthly_salary: 10000        # Expanded to include contracts, retainers & mid-tier roles from 10k
+    mid_market_monthly_salary: 25000 # Mid-tier enterprise / SME transformation
+    tier1_fde_monthly_salary: 50000  # High-bracket FDE & Leadership roles (up to 70k+)
+    skip_unpaid_or_internships: true
+
+project_archetypes:
+  1_voice_ai_agent:
+    description: "Production inbound/outbound voice automation with real-time audio streaming and CRM tool-calling"
+    target_budget_aed: "12,000 - 30,000 (Project / Retainer) or 40k-65k (Full-time)"
+    tech_stack: ["Vapi", "Retell AI", "Deepgram Flux", "Cartesia Sonic", "Twilio", "SIP", "WebRTC", "OpenAI Realtime"]
+  
+  2_company_brain:
+    description: "Enterprise RAG and Knowledge Graph indexing Notion, Drive, Slack, and internal ERPs"
+    target_budget_aed: "20,000 - 45,000 (Project / Build) or 45k-60k (Full-time Architect)"
+    tech_stack: ["LlamaIndex", "LangChain", "Qdrant", "ChromaDB", "Pinecone", "pgvector", "Hybrid Search", "Unstructured.io"]
+  
+  3_company_chatbot:
+    description: "Omnichannel customer engagement bot (WhatsApp, Web, Instagram) with dynamic CRM integration"
+    target_budget_aed: "10,000 - 25,000 (Build & Setup)"
+    tech_stack: ["WhatsApp Cloud API", "n8n", "Make", "FastAPI", "OpenAI Assistant API", "HubSpot", "Salesforce"]
+  
+  4_personal_assistant_jarvis:
+    description: "Autonomous executive multi-agent assistant for email triage, calendar scheduling, web research, and daily briefs"
+    target_budget_aed: "15,000 - 35,000 (Custom Build & Retainer)"
+    tech_stack: ["CrewAI", "LangGraph", "Hermes Agent", "Model Context Protocol (MCP)", "Google Workspace API", "Ollama / Claude 3.7"]
+  
+  5_claude_training_llmops:
+    description: "Anthropic Claude enterprise enablement, prompt engineering workshops, MCP architecture, and LLMOps governance"
+    target_budget_aed: "15,000 - 40,000 (Corporate Training / Consulting Retainer)"
+    tech_stack: ["Anthropic Claude API", "Claude Code", "MCP Tool Builder", "LangSmith", "Arize Phoenix", "Prompt Tuning"]
+
+target_companies_tiers:
+  tier_1_sovereign_ai:
+    - "G42"
+    - "AI71"
+    - "Presight.ai"
+    - "MBZUAI"
+    - "Inception (G42)"
+    - "Core42"
+    - "Technology Innovation Institute (TII)"
+  tier_2_tech_scaleups_and_smes:
+    - "Careem"
+    - "Talabat"
+    - "Noon"
+    - "Astra Tech / Botim"
+    - "Property Finder"
+    - "Bayut / Dubizzle"
+    - "DIFC & ADGM FinTech Scaleups"
+    - "UAE Real Estate & Healthcare Enterprises"
+  tier_3_global_tech_consulting:
+    - "Palantir Technologies"
+    - "Microsoft UAE"
+    - "PwC Middle East"
+    - "Bain & Company"
+    - "EY Middle East"
+
+outreach_rules:
+  mode: "personalized_executive"
+  target_decision_makers:
+    - "Founders / CEOs (For SME Agentic Builds & Brain Projects)"
+    - "Chief Technology Officer (CTO)"
+    - "VP of Engineering"
+    - "Head of AI / Director of Digital Transformation"
+  max_daily_pitches: 25
+  require_review_before_send: true
+  auto_generate_tailored_pitch: true
