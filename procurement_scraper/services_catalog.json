@@ -1,0 +1,400 @@
+{
+  "portal_name": "AqionProcure - UAE MEP & Fit-Out Procurement Intelligence",
+  "version": "1.0.0",
+  "region": "United Arab Emirates",
+  "jurisdictions": ["Dubai (DEWA/DCD/DM)", "Abu Dhabi (ADDC/DoE)", "Sharjah (SEWA)", "Northern Emirates (FEWA/EtihadWE)"],
+  "categories": [
+    {
+      "id": "electrical_power",
+      "name": "Electrical & Power",
+      "icon": "Zap",
+      "description": "LV/MV electrical installations, distribution boards, lighting controls, and authority testing.",
+      "services": [
+        {
+          "id": "elec-01",
+          "name": "Electrical Installation & Wiring",
+          "description": "New circuits, rewiring and dedicated supplies for heavy equipment. Cable sizing and load calculations done properly.",
+          "specifications": [
+            "XLPE/SWA/LSZH cable sizing per IEC 60364 and DEWA Wiring Regulations",
+            "Dedicated 3-phase circuits for chillers, pumps, machinery, and commercial kitchens",
+            "GI conduit, PVC trunking, perforated cable tray, and ladder installation",
+            "Load schedules, phase balancing calculations, and voltage drop verification (<4%)"
+          ],
+          "authorities": ["DEWA", "ADDC", "SEWA", "FEWA"],
+          "typical_boq_units": ["Linear Meters (LM)", "Points", "Circuits"]
+        },
+        {
+          "id": "elec-02",
+          "name": "Distribution Board Works",
+          "description": "New boards, upgrades, breaker changes, load balancing across phases, correct labelling and schedules.",
+          "specifications": [
+            "Main Distribution Boards (MDB), Sub-Main (SMDB), and Final Distribution Boards (DB)",
+            "Schneider / ABB / Siemens MCCBs, MCBs, ELCBs (30mA / 100mA / 300mA)",
+            "Engraved ferrule wire numbering, printed directory schedules, phase color-coding",
+            "Form 2 / Form 4 panel enclosures with IP55/IP65 weatherproof ratings"
+          ],
+          "authorities": ["DEWA", "ADDC", "Dubai Civil Defense"],
+          "typical_boq_units": ["Units / Panels", "Ways (4W, 8W, 12W, 18W, 24W)"]
+        },
+        {
+          "id": "elec-03",
+          "name": "Lighting Installation",
+          "description": "Indoor, outdoor and landscape lighting. LED upgrades, dimming and controls.",
+          "specifications": [
+            "Architectural LED downlights, linear profiles, cove strips, magnetic track lights",
+            "IP67/IP68 submersible and landscape spike lighting with low-voltage step-down transformers",
+            "DALI-2, 0-10V, Phase dimming, Lutron and KNX lighting control modules",
+            "Lux level calculations (DIALux) compliant with Estidama and Al Sa'fat green building codes"
+          ],
+          "authorities": ["Dubai Municipality", "Estidama", "Al Sa'fat"],
+          "typical_boq_units": ["Light Points", "Fixtures", "Linear Meters"]
+        },
+        {
+          "id": "elec-04",
+          "name": "Testing & Certification",
+          "description": "Insulation resistance, earth continuity, loop impedance and RCD testing, with written results you can keep.",
+          "specifications": [
+            "Calibrated Megger insulation resistance testing (500V / 1000V DC)",
+            "Earth electrode resistance (<5 Ohms for DEWA/ADDC, <1 Ohm for clean technical earth)",
+            "Earth fault loop impedance (Zs/Ze) and prospective short-circuit current (PSCC)",
+            "RCD trip time and sensitivity verification (1x, 5x test at 0° and 180°)",
+            "Formal signed & stamped Electrical Installation Certificate (EIC) test sheets"
+          ],
+          "authorities": ["DEWA", "ADDC", "SEWA"],
+          "typical_boq_units": ["Board / Test Package", "Inspection Sign-off"]
+        }
+      ]
+    },
+    {
+      "id": "plumbing_drainage",
+      "name": "Plumbing & Drainage",
+      "icon": "Droplets",
+      "description": "Potable water supply, HDPE/uPVC drainage, sanitary fixtures, and non-destructive leak detection.",
+      "services": [
+        {
+          "id": "plumb-01",
+          "name": "Water Supply Installation",
+          "description": "Cold and hot water pipework, valves, filters and pressure systems using potable-approved materials.",
+          "specifications": [
+            "PPR-C (PN16/PN20) fusion-welded, PEX-a barrier pipework, or Type K/L copper",
+            "WRAS / Dubai Municipality potable water certification for all fittings & valves",
+            "Variable frequency drive (VFD) pressure booster pumps, pressure reducing valves (PRV)",
+            "Central water filtration, UV disinfection systems, and thermal insulation with aluminum cladding"
+          ],
+          "authorities": ["Dubai Municipality", "DEWA Water Division", "ADDC"],
+          "typical_boq_units": ["Linear Meters", "Water Points", "Pump Skids"]
+        },
+        {
+          "id": "plumb-02",
+          "name": "Drainage & Waste Systems",
+          "description": "HDPE and uPVC waste, traps and floor drains, including F&B specification work for commercial kitchens.",
+          "specifications": [
+            "Electrofusion & butt-welded HDPE or push-fit BS EN 1329 uPVC soil & waste pipes",
+            "Above-ground / below-ground grease interceptors (HACCP / Dubai Municipality F&B specs)",
+            "Stainless steel AISI 304/316 linear channel drains, cleanouts, deep-seal anti-odor floor traps",
+            "Acoustic insulated drainage pipework (Geberit Silent-PP / Polystop) for luxury residential"
+          ],
+          "authorities": ["Dubai Municipality Drainage Dept", "Dubai Food Safety Department"],
+          "typical_boq_units": ["Drainage Points", "Linear Meters", "Interceptor Units"]
+        },
+        {
+          "id": "plumb-03",
+          "name": "Taps, Mixers & Sanitaryware",
+          "description": "Supply and installation of taps, mixers, showers, WCs, basins and water heaters. Replacing worn or leaking fittings and re-piping where needed.",
+          "specifications": [
+            "Concealed cisterns (Geberit / Grohe), wall-hung WC pans, thermostatic concealed shower valves",
+            "Sensory touchless taps, floor-standing bathtub mixers, kitchen pull-out faucets",
+            "Electric storage water heaters (vertical/horizontal, enamel-lined) and central heat pumps",
+            "Flexible braided SS 304 connections, angle valves with anti-limescale ceramic cartridges"
+          ],
+          "authorities": ["Dubai Municipality", "Al Sa'fat Water Conservation Standards"],
+          "typical_boq_units": ["Sets / Fixtures", "Bathrooms / Wet Areas"]
+        },
+        {
+          "id": "plumb-04",
+          "name": "Leak Detection & Repair",
+          "description": "Tracing hidden leaks, repairing the cause, and making the finishes good afterwards.",
+          "specifications": [
+            "Acoustic listening rod, tracer gas injection (95% N2 / 5% H2), and FLIR thermal imaging",
+            "Endoscopic pipe inspection cameras with video recording and distance locator",
+            "Targeted tile / screed lifting, localized pipe splicing with electrofusion or press-fit couplings",
+            "Pressure re-testing at 1.5x operating pressure (min 10 bar for 2 hours) and tile/marble reinstatement"
+          ],
+          "authorities": ["DEWA Leak Assessment", "Building Management Systems"],
+          "typical_boq_units": ["Inspection Job", "Repair & Finish Reinstatement"]
+        }
+      ]
+    },
+    {
+      "id": "ac_ventilation",
+      "name": "Air Conditioning & Ventilation",
+      "icon": "Wind",
+      "description": "HVAC split, ducted, package, VRF systems, kitchen ecology units, and duct airflow balancing.",
+      "services": [
+        {
+          "id": "hvac-01",
+          "name": "Air Conditioning",
+          "description": "Supply, installation, servicing and repair of split, ducted and VRF systems.",
+          "specifications": [
+            "Inverter Split units, Ducted Split, Package Units, and VRF/VRV multi-split systems (Daikin, O General, Mitsubishi, Carrier)",
+            "G90 galvanized iron ductwork (SMACNA standards), phenolic pre-insulated duct boards, acoustic lining",
+            "Refrigerant copper piping (R-410A / R-32 compliant) with Class 0 closed-cell elastomeric insulation",
+            "Smart digital thermostats (Nest, Ecobee, Honeywell, KNX BMS gateways)"
+          ],
+          "authorities": ["Dubai Municipality", "DEWA Cool Choice Program", "Trakhees"],
+          "typical_boq_units": ["Tons of Refrigeration (TR)", "Units", "Ductwork SQM"]
+        },
+        {
+          "id": "hvac-02",
+          "name": "Kitchen & Extract Ventilation",
+          "description": "Extract hoods, ducting, fans and air balancing for kitchens and plant rooms.",
+          "specifications": [
+            "AISI 304 stainless steel exhaust hoods with baffle filters and LED lighting (NFPA 96 & DM Code)",
+            "Black steel welded fire-rated extract ductwork with access doors at 3m intervals",
+            "Centrifugal / belt-driven inline extract fans and Ecology units (Electrostatic Precipitator + Carbon Filter)",
+            "Fresh air makeup fans, variable air volume (VAV) dampers, and digital anemometer airflow balancing"
+          ],
+          "authorities": ["Dubai Civil Defense", "Dubai Municipality Public Health Dept", "HACCP"],
+          "typical_boq_units": ["CFM Capacity", "Hood Sets", "Linear Meters Fire Duct"]
+        }
+      ]
+    },
+    {
+      "id": "smart_home_automation",
+      "name": "Smart Home & Automation",
+      "icon": "Home",
+      "description": "KNX, Zigbee, Crestron home automation, motorized shades, garage gates, and IoT sensor arrays.",
+      "services": [
+        {
+          "id": "smart-01",
+          "name": "Home Automation",
+          "description": "Lighting, climate, curtains and access controlled from your phone or a wall panel. We can integrate with what you already have.",
+          "specifications": [
+            "KNX protocol bus wiring, Crestron Home, Control4, Lutron Homeworks QSX, or Zigbee 3.0 wireless",
+            "Capacitive glass touch panels, smart scene keypads, and unified Apple HomeKit / Google / Home Assistant integration",
+            "Multi-zone audio matrix (Sonos, Russound, Bluesound) with architectural in-ceiling speakers",
+            "BMS gateway interfacing for HVAC, lighting, irrigation, and energy monitoring"
+          ],
+          "authorities": ["TRA / TDRA UAE", "DEWA Smart Grid Compliance"],
+          "typical_boq_units": ["Channels / Nodes", "Rooms / Villas", "System Core"]
+        },
+        {
+          "id": "smart-02",
+          "name": "Automatic Curtains & Blinds",
+          "description": "Motorised tracks with remote, app or scheduled control. Quiet operation, tidy cabling, linked to your automation system.",
+          "specifications": [
+            "Somfy Glydea Ultra / Tuya Wi-Fi & Zigbee quiet motorized curtain tracks (<30dB operation)",
+            "Dual-track setups (sheer + blackout) with custom curved tracks and ceiling recessed drywall pockets",
+            "Heavy-duty motorized roller shades with solar-screen and blackout fabrics",
+            "Scheduled astronomical sunrise/sunset triggers and integration with room occupancy sensors"
+          ],
+          "authorities": ["TDRA UAE"],
+          "typical_boq_units": ["Linear Meters", "Windows / Motors"]
+        },
+        {
+          "id": "smart-03",
+          "name": "Automatic Garage Doors",
+          "description": "Motorised doors with safety sensors that stop on obstruction. Remote, keypad and phone access.",
+          "specifications": [
+            "Overhead sectional, rolling shutter, and sliding gate automated drive systems (Sommer, Nice, BFT, CAME)",
+            "Dual infrared active photocell safety beams (auto-reverse on obstruction compliant with EN 12453)",
+            "Encrypted 433MHz / 868MHz rolling-code remotes, weatherproof wireless numeric keypads, GSM/App triggers",
+            "Integrated mechanical manual emergency release key during power outages"
+          ],
+          "authorities": ["Dubai Municipality Building Safety"],
+          "typical_boq_units": ["Door Sets", "Gate Drive Systems"]
+        },
+        {
+          "id": "smart-04",
+          "name": "Door & Window Sensors",
+          "description": "Magnetic contacts that tell you the moment a door or window opens. Alerts straight to your phone, and can trigger lights or alarms.",
+          "specifications": [
+            "Concealed flush-mount or surface-mount magnetic reed switches (Grade 2 / Grade 3 tamper-protected)",
+            "Zigbee / Z-Wave / Hardwired dry-contact sensors reporting to central automation hub",
+            "Automated AC shut-off triggers when balcony sliding doors remain open >30 seconds",
+            "Push notification alerts, security arming logic, and siren strobe activation"
+          ],
+          "authorities": ["TDRA UAE", "SIRA Guidelines"],
+          "typical_boq_units": ["Sensors / Openings"]
+        },
+        {
+          "id": "smart-05",
+          "name": "House Control Sensors",
+          "description": "Motion, presence, temperature, humidity, water leak and smoke sensors. Lights that come on as you walk in, and a warning before a small problem becomes a big one.",
+          "specifications": [
+            "24GHz mmWave radar human presence sensors (detects stationary breathing vs false pet triggers)",
+            "Dual-technology PIR + Microwave motion detectors for corridors and outdoor areas",
+            "Precision calibrated temperature & relative humidity sensors for climate PID loop control",
+            "Floor water leak probes with motorized automatic main water shut-off motorized ball valves",
+            "Photoelectric smoke and CO detectors with interlinked sounder alerts"
+          ],
+          "authorities": ["Dubai Civil Defense (DCD)", "TDRA UAE"],
+          "typical_boq_units": ["Sensor Points", "Coverage Zones"]
+        }
+      ]
+    },
+    {
+      "id": "security_access",
+      "name": "Security & Access",
+      "icon": "Shield",
+      "description": "SIRA compliant CCTV surveillance, biometric access control, video intercoms, and gate automation.",
+      "services": [
+        {
+          "id": "sec-01",
+          "name": "CCTV Cameras",
+          "description": "Indoor and outdoor cameras with night vision and recording. Watch live on your phone from anywhere. We handle cabling, mounting, recorder and setup.",
+          "specifications": [
+            "4K / 8MP IP Network Cameras (Hikvision, Dahua, Axis, Hanwha) with ColorVu / DarkFighter night vision",
+            "SIRA (Security Industry Regulatory Agency) compliant camera positioning, storage (min 31-90 days RAID), and UPS power backup",
+            "AI-powered Human/Vehicle classification, perimeter virtual tripwire intrusion alerts, and license plate recognition (LPR)",
+            "Cat6 UTP/STP structured cabling, PoE+ gigabit network switches, and secure encrypted cloud mobile app viewing"
+          ],
+          "authorities": ["SIRA (Dubai)", "ADM / MCC (Abu Dhabi)", "Sharjah Police"],
+          "typical_boq_units": ["Camera Points", "Channels (8/16/32/64)", "Storage TB"]
+        },
+        {
+          "id": "sec-02",
+          "name": "Access Control & Intercom",
+          "description": "Video intercom, keypad and card entry, and gate automation.",
+          "specifications": [
+            "IP Video door stations with 1080p camera, RFID Mifare card reader, keypad, and indoor touchscreen monitors (Hikvision / Comelit / 2N)",
+            "Biometric facial recognition, optical fingerprint scanners, and Bluetooth mobile credential readers",
+            "600lbs / 1200lbs electromagnetic maglocks, fail-safe drop bolts, break-glass emergency egress units",
+            "Sliding & swing gate automation motors with flashing warning beacons and long-range RFID vehicle tags"
+          ],
+          "authorities": ["SIRA Dubai", "Dubai Civil Defense"],
+          "typical_boq_units": ["Doors / Access Points", "Intercom Stations"]
+        }
+      ]
+    },
+    {
+      "id": "specialist_equipment",
+      "name": "Specialist Equipment Installation",
+      "icon": "Cpu",
+      "description": "Wellness chambers, saunas, cold plunge, commercial catering lines, and gym machinery.",
+      "services": [
+        {
+          "id": "spec-01",
+          "name": "Imported & Specialist Equipment",
+          "description": "Assembly, hardwiring, testing and commissioning of equipment that arrives without an installation team. Wellness and therapy chambers, saunas, gym plant.",
+          "specifications": [
+            "Uncrating, leveling, vibration isolation, and anchoring of heavy imported equipment",
+            "3-Phase 400V / Single-Phase 230V hardwired electrical connections with dedicated rotary isolators",
+            "Plumbing supply, chilled water loops, drainage hookups, and steam ventilation for wellness chambers & saunas",
+            "Manufacturer-guided commissioning, rotation check on motors, safety interlock testing, and handover testing sign-offs"
+          ],
+          "authorities": ["Dubai Municipality Safety Section", "DEWA"],
+          "typical_boq_units": ["Machines / Packages", "Commissioning Man-Days"]
+        },
+        {
+          "id": "spec-02",
+          "name": "Commercial Kitchen Equipment",
+          "description": "Positioning and connection of water, drainage and power to catering equipment, to F&B specification.",
+          "specifications": [
+            "Commercial combi-ovens (Rational, Unox), deep fryers, gas ranges, dishwashers, and blast chillers",
+            "High-temperature CPVC / copper water supply with dedicated water softeners and backflow preventers",
+            "Direct indirect air-gap drainage discharge into dedicated grease traps per municipality hygiene code",
+            "Gas pipework connection with solenoid safety shut-off valves linked to fire alarm gas leak detectors",
+            "HACCP compliance documentation and municipal food safety inspection clearance"
+          ],
+          "authorities": ["Dubai Municipality Food Safety Dept", "Dubai Civil Defense", "HACCP"],
+          "typical_boq_units": ["Kitchen Equipment Line", "Points / Appliances"]
+        }
+      ]
+    },
+    {
+      "id": "ceilings_finishes",
+      "name": "Ceilings, Finishes & Fit-Out",
+      "icon": "Layers",
+      "description": "Gypsum bulkheads, seamless epoxy flooring, core drilling, fire-stopping, and builder making good.",
+      "services": [
+        {
+          "id": "finish-01",
+          "name": "Gypsum Ceilings & Partitions",
+          "description": "Suspended ceilings, bulkheads, coves and partition walls. We cut in for lights, AC grilles and speakers, then tape, skim and paint to a finished surface.",
+          "specifications": [
+            "Knauf / Gyproc regular, moisture-resistant (MR green board for wet areas), and fire-rated (Type X pink board)",
+            "Suspended galvanized steel MF ceiling grid, concealed shadow gaps, curtain pelmets, and indirect LED lighting coves",
+            "Precision CNC/manual cut-outs for downlights, linear diffusers, AC return air grilles, and access panels",
+            "3-coat joint compound taping, full skim coat plastering, primer, and premium emulsion paint finish (Jotun/Caparol)"
+          ],
+          "authorities": ["Dubai Civil Defense (Fire-rated assemblies)", "Dubai Municipality"],
+          "typical_boq_units": ["Square Meters (SQM)", "Linear Meters (Coves/Pelmets)"]
+        },
+        {
+          "id": "finish-02",
+          "name": "Epoxy Resin Flooring",
+          "description": "Seamless resin floors for garages, kitchens, plant rooms and terraces. Hard wearing, chemical and slip resistant, easy to clean.",
+          "specifications": [
+            "Substrate diamond grinding, shot-blasting, crack injection, and moisture barrier epoxy primer",
+            "Self-leveling epoxy flooring (2mm to 4mm thickness) or heavy-duty polyurethane resin screeds (Fosroc / BASF / Jotun)",
+            "Anti-slip quartz broadcast aggregate for commercial kitchens, wet areas, and parking ramps (R10 / R11 slip rating)",
+            "UV-resistant aliphatic polyurethane topcoat for outdoor terraces and plant rooms, chemical & oil resistance"
+          ],
+          "authorities": ["Dubai Municipality", "HACCP Hygiene Certification"],
+          "typical_boq_units": ["Square Meters (SQM)"]
+        },
+        {
+          "id": "finish-03",
+          "name": "Builders Work & Making Good",
+          "description": "Core drilling, penetrations, fire-stopping joinery adjustment and reinstatement of finishes.",
+          "specifications": [
+            "Diamond core drilling (50mm to 300mm diameter) through reinforced concrete slabs and masonry walls without structural damage",
+            "Civil Defense certified intumescent fire-stopping pillows, acrylic sealants, and fire-wrap collars for pipe/cable penetrations",
+            "Blockwork opening creation, steel lintel installation, plaster repair, and screed patching",
+            "Tile, marble, parquet, and wallpaper reinstatement matching existing architectural finishes flawlessly"
+          ],
+          "authorities": ["Dubai Civil Defense", "Structural Engineering Consultant"],
+          "typical_boq_units": ["Cores / Penetrations", "Lump Sum per Scope"]
+        }
+      ]
+    },
+    {
+      "id": "documentation_support",
+      "name": "Documentation & Support",
+      "icon": "FileText",
+      "description": "AutoCAD/BIM shop drawings, Material Approval Requests, Method Statements, AMCs, and certified manpower.",
+      "services": [
+        {
+          "id": "doc-01",
+          "name": "Shop Drawings & Submittals",
+          "description": "Installation drawings, material approval requests and method statements prepared for consultant and authority approval.",
+          "specifications": [
+            "AutoCAD 2D and Revit BIM Level 2 coordinated MEP composite overlay drawings (clash detection resolved)",
+            "Comprehensive Material Approval Requests (MAR) with manufacturer compliance sheets, ISO certs, and sample boards",
+            "Detailed Method Statement (MOS) and Inspection & Test Plans (ITP) per BS / ASHRAE / DEWA engineering standards",
+            "As-Built Drawings and Operation & Maintenance (O&M) manuals formatted for facility handover"
+          ],
+          "authorities": ["DEWA", "ADDC", "Dubai Municipality", "Consultant Approval"],
+          "typical_boq_units": ["Drawing Sheets (A1/A0)", "Submittal Packages", "Project Packages"]
+        },
+        {
+          "id": "doc-02",
+          "name": "Maintenance Contracts",
+          "description": "Scheduled preventive maintenance for villas and commercial premises, with call-out cover.",
+          "specifications": [
+            "Quarterly / Bi-annual scheduled preventive maintenance (PPM) checklists for AC, Electrical, and Plumbing",
+            "Filter cleaning, coil washing, refrigerant pressure checks, electrical thermography, and drain line flushing",
+            "24/7 Emergency call-out response with guaranteed 2-hour SLA for critical power or water outages in UAE",
+            "Detailed digital asset log, maintenance history reports, and preventive replacement recommendations"
+          ],
+          "authorities": ["Facility Management Standards", "Dubai Municipality"],
+          "typical_boq_units": ["Annual Contract (AED/year)", "Monthly Retainer"]
+        },
+        {
+          "id": "doc-03",
+          "name": "Manpower Supply",
+          "description": "Skilled technicians and helpers supplied daily, monthly or by project.",
+          "specifications": [
+            "Fully visa-compliant, insured (Workmen's Compensation), UAE-certified electricians, plumbers, HVAC technicians, duct men, epoxy applicators & helpers",
+            "Complete PPE provision (helmets, safety shoes, hi-vis vests, harness) compliant with Dubai Municipality HSE regulations",
+            "Supplied with standard MEP hand tools and power tools on daily, monthly, or project milestone rates",
+            "Direct supervisor / foreman deployment for teams of 5+ technicians to ensure project velocity and QA"
+          ],
+          "authorities": ["Ministry of Human Resources and Emiratisation (MOHRE)", "Dubai HSE"],
+          "typical_boq_units": ["Man-Hours", "Man-Days", "Monthly Retainer per Head"]
+        }
+      ]
+    }
+  ]
+}

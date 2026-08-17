@@ -117,6 +117,25 @@ export default function GeneratorDashboard() {
 
         <nav style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <Link
+            href="/procure"
+            style={{
+              textDecoration: 'none',
+              background: '#171724',
+              color: '#fff',
+              padding: '6px 14px',
+              borderRadius: '8px',
+              fontSize: '13px',
+              fontWeight: 600,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+            }}
+          >
+            <Zap size={14} color="#38c986" />
+            UAE Procurement Portal (MEP)
+          </Link>
+          <Link
             href="/hunt"
             style={{
               textDecoration: 'none',
@@ -133,7 +152,7 @@ export default function GeneratorDashboard() {
             }}
           >
             <Sparkles size={14} />
-            UAE AI Hunting Portal (Live Leads)
+            UAE AI Hunting Portal
           </Link>
         </nav>
       </header>
@@ -141,7 +160,26 @@ export default function GeneratorDashboard() {
       <main className="stage" style={{ minHeight: 'calc(100vh - 60px)', justifyContent: 'center' }}>
         {/* Lockup Header */}
         <header className="hero" style={{ marginBottom: '32px' }}>
-          <div style={{ marginBottom: '14px' }}>
+          <div style={{ marginBottom: '14px', display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link
+              href="/procure"
+              style={{
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'rgba(81, 69, 229, 0.12)',
+                color: 'var(--violet)',
+                padding: '6px 14px',
+                borderRadius: '999px',
+                fontSize: '12px',
+                fontWeight: 600,
+                border: '1px solid rgba(81, 69, 229, 0.3)',
+              }}
+            >
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--violet)' }} />
+              New: UAE MEP Procurement Portal (14 Active Tenders · AED 8.45M) →
+            </Link>
             <Link
               href="/hunt"
               style={{
@@ -159,7 +197,7 @@ export default function GeneratorDashboard() {
               }}
             >
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#1e8455' }} />
-              Live: 18+ UAE AI Jobs, Tenders & SME Requests Found (AED 10k+) →
+              Live: 18+ UAE AI Jobs Found →
             </Link>
           </div>
 

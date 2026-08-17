@@ -1,0 +1,103 @@
+# AqionProcure - UAE MEP & Fit-Out Procurement Intelligence Configuration
+
+portal:
+  name: "AqionProcure"
+  region: "UAE"
+  currency: "AED"
+  default_emirate: "Dubai"
+  supported_emirates:
+    - "Dubai"
+    - "Abu Dhabi"
+    - "Sharjah"
+    - "Ajman"
+    - "Ras Al Khaimah"
+    - "Fujairah"
+    - "Umm Al Quwain"
+
+scrapers:
+  engines:
+    scrapling:
+      default_fetcher: "Fetcher" # Fetcher, DynamicFetcher, StealthyFetcher
+      timeout_ms: 30000
+      solve_cloudflare: true
+      stealth_headers: true
+      concurrent_requests: 6
+    scrapingant:
+      proxy_country: "ae" # UAE residential proxy
+      browser_rendering: true
+    apify:
+      default_actors:
+        google_places: "compass/crawler-google-places"
+        contact_extractor: "vdrmota/contact-info-scraper"
+        web_scraper: "apify/web-scraper"
+    webscraping_ai:
+      js_rendering: true
+      country: "ae"
+
+target_portals:
+  government_tenders:
+    - name: "eSupply Dubai (Official Dubai Government Tender Portal)"
+      url: "https://esupply.dubai.gov.ae"
+      categories: ["MEP", "Facilities Management", "Fit-Out", "Electrical", "HVAC", "Plumbing"]
+    - name: "Abu Dhabi TAMM Sovereign Tenders"
+      url: "https://www.tamm.abudhabi"
+      categories: ["Infrastructure", "MEP Works", "Facility Maintenance"]
+    - name: "Tejari GCC Procurement"
+      url: "https://portal.tejari.com"
+      categories: ["Commercial Tenders", "Subcontracting Packages"]
+  contractor_directories:
+    - name: "Yello.ae UAE Contractors Directory"
+      url: "https://www.yello.ae/category/contractors/city:dubai"
+      subcategories: ["mep-contractors", "electricians", "plumbers", "air-conditioning-contractors", "flooring", "suspended-ceilings"]
+    - name: "YellowPages UAE"
+      url: "https://www.yellowpages-uae.com"
+    - name: "Dubai Municipality Registered Contractors"
+      url: "https://www.dm.gov.ae"
+    - name: "DEWA Approved MEP Contractors Directory"
+      url: "https://www.dewa.gov.ae"
+
+rate_benchmarks_aed:
+  electrical:
+    wiring_point_aed: 120 # per point including conduit & wire
+    db_upgrade_single_phase_aed: 1800
+    db_upgrade_three_phase_aed: 4500
+    submain_cable_per_meter_aed: 95 # 4C 16mm2 to 25mm2 XLPE/SWA
+    megger_testing_per_db_aed: 850
+  plumbing:
+    water_point_ppr_aed: 140
+    drainage_point_pvc_aed: 160
+    sanitaryware_install_per_set_aed: 650 # WC, basin, mixer
+    leak_detection_inspection_aed: 1200 # thermal + acoustic
+  hvac:
+    split_ac_supply_install_per_tr_aed: 1600 # 2-ton split approx 3200
+    ducted_split_per_tr_aed: 2400
+    kitchen_exhaust_hood_ss304_per_lm_aed: 3200
+    ecology_unit_esp_carbon_aed: 28000
+  smart_home:
+    automation_node_knx_aed: 450
+    motorized_curtain_track_per_lm_aed: 350
+    garage_door_motor_kit_aed: 2800
+    sensor_point_aed: 220
+  security:
+    cctv_camera_point_4k_ip_aed: 750 # supply, cable, mount
+    nvr_16ch_sira_compliant_aed: 3800
+    video_intercom_station_aed: 2400
+    access_control_maglock_door_aed: 1900
+  specialist_equipment:
+    commercial_combi_oven_hookup_aed: 1500
+    wellness_sauna_chamber_commissioning_aed: 3500
+  ceilings_finishes:
+    gypsum_ceiling_regular_per_sqm_aed: 75
+    gypsum_ceiling_moisture_resistant_sqm_aed: 95
+    epoxy_floor_2mm_self_leveling_sqm_aed: 85
+    polyurethane_heavy_duty_screed_sqm_aed: 145
+    core_drilling_per_hole_100mm_aed: 250
+  manpower_rates:
+    mep_electrician_daily_aed: 180 # 8-hr shift
+    mep_plumber_daily_aed: 175
+    hvac_technician_daily_aed: 190
+    ductman_daily_aed: 160
+    epoxy_applicator_daily_aed: 185
+    mep_helper_daily_aed: 110
+    mep_foreman_monthly_aed: 5500
+    mep_project_engineer_monthly_aed: 12000
