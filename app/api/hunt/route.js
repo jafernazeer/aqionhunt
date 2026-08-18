@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { JOB_HUNT_PORTAL_CATEGORIES, TENDER_PORTAL_CATEGORIES } from './portals_data';
+import { scrapeLiveJobPortals } from '../../../lib/job_scraper';
 
 // Helper for dates in last 45 days
 const NOW = Date.now();
@@ -747,10 +748,18 @@ export async function GET(request) {
     results = results.filter(item => item.is_ai_priority === true || item.tech_signals?.some(t => t.toLowerCase().includes('ai') || t.toLowerCase().includes('voice')));
   }
 
-  // Keyword query search
+  // Keyword query search & live scraper integration
   if (q) {
     const term = q.toLowerCase();
-    results = results.filter(item => 
+
+    let liveScrapedJobs = [];
+    try {
+      liveScrapedJobs = await scrapeLiveJobPortals(q, category);
+    } catch (err) {
+      console.warn('Live scraper background note in GET:', err.message);
+    }
+
+    const filteredIndexed = results.filter(item => 
       item.title.toLowerCase().includes(term) ||
       item.company.toLowerCase().includes(term) ||
       item.description.toLowerCase().includes(term) ||
@@ -759,6 +768,12 @@ export async function GET(request) {
       item.source_name.toLowerCase().includes(term) ||
       item.major_job_points?.some(pt => pt.toLowerCase().includes(term))
     );
+
+    if (liveScrapedJobs.length > 0) {
+      results = [...liveScrapedJobs, ...filteredIndexed];
+    } else {
+      results = filteredIndexed;
+    }
   }
 
   // Sort by posted_timestamp (newest first)
@@ -818,7 +833,16 @@ export async function POST(request) {
     // Keyword search across all public scraped sources
     if (query) {
       const term = query.toLowerCase();
-      results = results.filter(item => 
+
+      // Perform live portal scraping across LinkedIn, Indeed, Bayt, Naukrigulf
+      let liveScrapedJobs = [];
+      try {
+        liveScrapedJobs = await scrapeLiveJobPortals(query, category);
+      } catch (err) {
+        console.warn('Live scraper background note:', err.message);
+      }
+
+      const filteredIndexed = results.filter(item => 
         item.title.toLowerCase().includes(term) ||
         item.company.toLowerCase().includes(term) ||
         item.description.toLowerCase().includes(term) ||
@@ -828,8 +852,12 @@ export async function POST(request) {
         item.major_job_points?.some(pt => pt.toLowerCase().includes(term))
       );
 
-      // If query is specific and no exact match found, dynamically synthesize a verified UAE lead within the 45-day window
-      if (results.length === 0) {
+      if (liveScrapedJobs.length > 0) {
+        results = [...liveScrapedJobs, ...filteredIndexed];
+      } else if (filteredIndexed.length > 0) {
+        results = filteredIndexed;
+      } else {
+        // If query is specific and no exact match found, dynamically synthesize a verified UAE lead within the 45-day window
         const dynamicSynthesizedLead = {
           id: `dyn-${Date.now()}`,
           category: category || "it_jobs",
