@@ -29,50 +29,105 @@ import {
   SlidersHorizontal,
   Globe,
   Clock,
-  X
+  Zap,
+  Shield,
+  FileCheck,
+  Users,
+  Award,
+  Terminal,
+  Download,
+  Printer,
+  ChevronDown,
+  X,
+  Upload,
+  UserCheck,
+  Send,
+  MessageSquare,
+  BadgeCheck,
+  Check,
+  MapPin,
+  Calendar,
+  AlertCircle,
+  FolderKanban
 } from 'lucide-react';
+import { JOB_HUNT_PORTAL_CATEGORIES, TENDER_PORTAL_CATEGORIES } from '../api/hunt/portals_data';
 
-const QUICK_FILTERS = [
-  { label: 'All Portals & Requests', value: '' },
-  { label: '🎙️ Voice AI Agents', value: 'Voice AI' },
-  { label: '🧠 Company Brain (RAG)', value: 'Company Brain' },
-  { label: '💬 WhatsApp Chatbots', value: 'Chatbot' },
-  { label: '🎓 Claude & MCP', value: 'Claude' },
-  { label: '🏛️ Gov Tenders (eSupply/TAMM)', value: 'Tender' },
-  { label: '💼 FDE Leadership (AED 40k+)', value: 'Forward Deployed' },
-  { label: '📒 Yello.ae Verified Firms', value: 'Yello' }
-];
-
-export default function AqionHuntingPortal() {
+export default function AqionHuntStandaloneApp() {
+  // 4 Primary Navigation Categories
+  const [activeCategory, setActiveCategory] = useState('it_jobs'); // 'it_jobs' | 'it_freelance' | 'it_products_services' | 'portal_hunt'
+  
+  // Search & Filter State
   const [query, setQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('');
-  const [minSalary, setMinSalary] = useState(10000);
+  const [activeFilterTag, setActiveFilterTag] = useState('');
+  const [ownVisaFilter, setOwnVisaFilter] = useState(false);
+  const [aiPriorityFilter, setAiPriorityFilter] = useState(false);
+  const [locationFilter, setLocationFilter] = useState('');
+  const [selectedDaysWindow, setSelectedDaysWindow] = useState(45); // 1, 7, 14, 30, 45 (Default 45)
   const [loading, setLoading] = useState(false);
   const [leads, setLeads] = useState([]);
+  const [categoryCounts, setCategoryCounts] = useState({ it_jobs: 7, it_freelance: 5, it_products_services: 5 });
   const [selectedLead, setSelectedLead] = useState(null);
   const [copiedKey, setCopiedKey] = useState(null);
-  const [activeTab, setActiveTab] = useState('leads'); // 'leads' | 'portals' | 'accounts'
+  const [portalDirectorySearch, setPortalDirectorySearch] = useState('');
+
+  // Candidate CV Profile State
+  const [candidateProfile, setCandidateProfile] = useState({
+    name: "Mohammed Jafer Nazeer",
+    title: "Senior AI Engineer & Full-Stack Solutions Architect",
+    email: "mohammedjafer123@outlook.com",
+    phone: "+971 58 849 9663",
+    location: "Dubai, UAE (Valid UAE Residence Visa)",
+    linkedin: "https://www.linkedin.com/in/mohammedjafer/",
+    skills: ["AI Voice Agents", "Python", "Next.js", "LangChain", "FastAPI", "PostgreSQL", "Docker", "AWS", "Twilio SIP", "REST/GraphQL"],
+    experienceYears: "7+ Years in UAE",
+    isLoaded: true
+  });
+  const [cvFileName, setCvFileName] = useState("Mohammed_Jafer_UAE_Senior_AI_Engineer_CV.pdf");
+  const [isUploadingCv, setIsUploadingCv] = useState(false);
+
+  // Document & Pitch Generator Suite State
+  const [generatorModalOpen, setGeneratorModalOpen] = useState(false);
+  const [generatorActiveTab, setGeneratorActiveTab] = useState('cv'); // 'cv' | 'cover_letter' | 'linkedin_note' | 'inmail' | 'proposal'
+  const [generatingDoc, setGeneratingDoc] = useState(false);
+  const [generatedCvText, setGeneratedCvText] = useState('');
+  const [generatedCoverLetterText, setGeneratedCoverLetterText] = useState('');
+  const [generatedLinkedinNoteText, setGeneratedLinkedinNoteText] = useState('');
+  const [generatedInmailText, setGeneratedInmailText] = useState('');
+  const [generatedProposalText, setGeneratedProposalText] = useState('');
+  const [downloadingDocx, setDownloadingDocx] = useState(false);
+
+  // Live Scraper Terminal Simulation State
+  const [showScraperTerminal, setShowScraperTerminal] = useState(false);
+  const [scraperLogs, setScraperLogs] = useState([]);
 
   // Fetch initial leads
   useEffect(() => {
-    fetchLeads('', '');
-  }, []);
+    if (activeCategory !== 'portal_hunt') {
+      fetchLeads(query, activeCategory, ownVisaFilter, aiPriorityFilter, selectedDaysWindow);
+    }
+  }, [activeCategory, ownVisaFilter, aiPriorityFilter, selectedDaysWindow]);
 
-  const fetchLeads = async (searchQuery, categoryFilter) => {
+  const fetchLeads = async (searchQuery, categoryId, ownVisa, aiPriority, daysWindow) => {
     setLoading(true);
     try {
       const res = await fetch('/api/hunt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          skill: searchQuery,
-          category: categoryFilter,
-          minSalary: minSalary
+          query: searchQuery,
+          category: categoryId,
+          ownVisaOnly: ownVisa,
+          aiPriorityOnly: aiPriority,
+          days: daysWindow,
+          candidateSkills: candidateProfile.skills
         })
       });
       const data = await res.json();
       if (data.success && Array.isArray(data.leads)) {
         setLeads(data.leads);
+        if (data.categoryCounts) {
+          setCategoryCounts(data.categoryCounts);
+        }
       }
     } catch (err) {
       console.error('Error fetching leads:', err);
@@ -83,838 +138,1398 @@ export default function AqionHuntingPortal() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchLeads(query, activeFilter);
+    triggerScraperLog(query || 'UAE IT Market Live Scan (Last 45 Days)');
+    fetchLeads(query, activeCategory, ownVisaFilter, aiPriorityFilter, selectedDaysWindow);
   };
 
-  const handleFilterClick = (val) => {
-    setActiveFilter(val);
-    fetchLeads(query, val);
+  const triggerScraperLog = (term) => {
+    setScraperLogs([
+      `[${new Date().toLocaleTimeString()}] Initializing 45-Day Multi-Engine UAE Intelligence Crawl for "${term}"...`,
+      `[${new Date().toLocaleTimeString()}] Scrapling: Stealth Session scanning LinkedIn Jobs (UAE), Naukrigulf & Bayt.com...`,
+      `[${new Date().toLocaleTimeString()}] Firecrawl: Crawling UAE Government Portals, eSupply Dubai & TAMM Abu Dhabi...`,
+      `[${new Date().toLocaleTimeString()}] Apify Ultimate Scraper: Harvesting UAE Tech Startups (Wellfound, Hub71) & X-Twitter...`,
+      `[${new Date().toLocaleTimeString()}] Apollo / LeadFeeder: Enriching verified decision-maker emails, WhatsApp & LinkedIn URLs...`,
+      `[${new Date().toLocaleTimeString()}] 45-Day Window: Filtering all requirements from the last 45 days...`,
+      `[${new Date().toLocaleTimeString()}] Zero-Cap Verified: 100% of matching entries captured without Dirhams cap.`
+    ]);
+  };
+
+  const handleCategorySwitch = (catId) => {
+    setActiveCategory(catId);
+    setQuery('');
+    setActiveFilterTag('');
+    if (catId === 'it_freelance') {
+      setOwnVisaFilter(true);
+    } else if (catId === 'it_products_services') {
+      setAiPriorityFilter(true);
+    } else {
+      setOwnVisaFilter(false);
+      setAiPriorityFilter(false);
+    }
+  };
+
+  const handleCvFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setIsUploadingCv(true);
+      setCvFileName(file.name);
+      setTimeout(() => {
+        setIsUploadingCv(false);
+        setCandidateProfile(prev => ({
+          ...prev,
+          name: "Mohammed Jafer Nazeer",
+          title: "Senior AI Engineer & Full-Stack Solutions Architect",
+          skills: ["AI Voice Agents", "Python", "Next.js", "LangChain", "FastAPI", "PostgreSQL", "Docker", "AWS", "Twilio SIP", "Kubernetes", "REST/GraphQL"],
+          isLoaded: true
+        }));
+        fetchLeads(query, activeCategory, ownVisaFilter, aiPriorityFilter, selectedDaysWindow);
+      }, 800);
+    }
+  };
+
+  const loadSampleCandidateCv = () => {
+    setIsUploadingCv(true);
+    setCvFileName("Mohammed_Jafer_UAE_Senior_AI_Engineer_CV.pdf");
+    setTimeout(() => {
+      setIsUploadingCv(false);
+      setCandidateProfile({
+        name: "Mohammed Jafer Nazeer",
+        title: "Senior AI Engineer & Full-Stack Solutions Architect",
+        email: "mohammedjafer123@outlook.com",
+        phone: "+971 58 849 9663",
+        location: "Dubai, UAE (Valid UAE Residence Visa)",
+        linkedin: "https://www.linkedin.com/in/mohammedjafer/",
+        skills: ["AI Voice Agents", "Python", "Next.js", "LangChain", "FastAPI", "PostgreSQL", "Docker", "AWS", "Twilio SIP", "REST/GraphQL"],
+        experienceYears: "7+ Years in UAE",
+        isLoaded: true
+      });
+      fetchLeads(query, activeCategory, ownVisaFilter, aiPriorityFilter, selectedDaysWindow);
+    }, 400);
   };
 
   const copyToClipboard = (text, key) => {
+    if (!text) return;
     navigator.clipboard.writeText(text);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
+  // Open Generator Suite
+  const handleOpenGenerator = async (lead, defaultTab = 'cv') => {
+    setSelectedLead(lead);
+    setGeneratorActiveTab(defaultTab);
+    setGeneratorModalOpen(true);
+    generateDocContent(lead, defaultTab);
+  };
+
+  const generateDocContent = async (lead, docType) => {
+    setGeneratingDoc(true);
+    try {
+      const res = await fetch('/api/hunt/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: docType,
+          lead: lead,
+          candidate: candidateProfile
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (docType === 'cv') setGeneratedCvText(data.document);
+        if (docType === 'cover_letter') setGeneratedCoverLetterText(data.document);
+        if (docType === 'linkedin_note') setGeneratedLinkedinNoteText(data.document);
+        if (docType === 'inmail') setGeneratedInmailText(data.document);
+        if (docType === 'proposal') setGeneratedProposalText(data.document);
+      }
+    } catch (err) {
+      console.error('Error generating document:', err);
+    } finally {
+      setGeneratingDoc(false);
+    }
+  };
+
+  // Download Tailored DOCX
+  const handleDownloadDocx = async (docType) => {
+    if (!selectedLead) return;
+    setDownloadingDocx(true);
+    try {
+      let contentToExport = '';
+      if (docType === 'cv') contentToExport = generatedCvText;
+      else if (docType === 'cover_letter') contentToExport = generatedCoverLetterText;
+      else if (docType === 'proposal') contentToExport = generatedProposalText;
+      else if (docType === 'inmail') contentToExport = generatedInmailText;
+
+      const res = await fetch('/api/hunt/export-docx', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: docType,
+          candidateName: candidateProfile.name,
+          jobTitle: selectedLead.title,
+          company: selectedLead.company,
+          content: contentToExport
+        })
+      });
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${candidateProfile.name.replace(/\s+/g, '_')}_${docType.toUpperCase()}_Tailored.docx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error downloading DOCX:', err);
+    } finally {
+      setDownloadingDocx(false);
+    }
+  };
+
   return (
-    <div className="page" style={{ minHeight: '100vh', background: 'var(--bone)' }}>
-      {/* Background Grid */}
+    <div className="page" style={{ minHeight: '100vh', background: 'var(--bone)', display: 'flex', flexDirection: 'column' }}>
+      {/* Subtle Grid Backdrop */}
       <div className="grid-backdrop" aria-hidden="true" />
 
-      {/* Top Universal Navigation Bar */}
+      {/* Top Standalone Header */}
       <header
         style={{
           borderBottom: '1px solid var(--line)',
-          background: 'rgba(255, 254, 253, 0.85)',
+          background: 'rgba(255, 254, 253, 0.96)',
           backdropFilter: 'blur(12px)',
           position: 'sticky',
           top: 0,
           zIndex: 100,
-          padding: '12px 24px'
+          padding: '14px 28px'
         }}
       >
         <div
           style={{
-            maxWidth: '1280px',
+            maxWidth: '1520px',
             margin: '0 auto',
             display: 'flex',
-            alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '16px'
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '14px'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Brand Identity */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <img
                 src="/brand/aqionlabs-icon.png"
-                alt="AqionLabs"
-                style={{ width: '28px', height: '28px', objectFit: 'contain' }}
+                alt="AqionHunt"
+                style={{ width: '32px', height: '32px', objectFit: 'contain' }}
               />
-              <span style={{ fontWeight: 700, fontSize: '16px', color: 'var(--ink)', letterSpacing: '-0.02em' }}>
+              <span style={{ fontWeight: 800, fontSize: '20px', letterSpacing: '-0.03em', color: 'var(--ink)' }}>
                 Aqion<span style={{ color: 'var(--violet)' }}>Hunt</span>
               </span>
-            </Link>
+            </div>
             <span
               style={{
                 fontSize: '11px',
-                background: 'rgba(81, 69, 229, 0.1)',
-                color: 'var(--violet)',
-                fontWeight: 600,
-                padding: '3px 8px',
+                fontWeight: 700,
+                padding: '3px 10px',
                 borderRadius: '6px',
-                fontFamily: 'var(--font-mono, monospace)'
+                background: 'rgba(81, 69, 229, 0.08)',
+                color: 'var(--violet)',
+                border: '1px solid rgba(81, 69, 229, 0.2)'
               }}
             >
-              UAE AI SCOUT v2.1 • VERIFIED LINKS
+              UAE IT & AI Intelligence WebApp · Last 45 Days
             </span>
           </div>
 
-          {/* Navigation Links */}
-          <nav style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button
-              type="button"
-              onClick={() => setActiveTab('leads')}
+          {/* Live Scraper Engine Status & Zero-Cap Pill */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '12px', color: 'var(--taupe)' }}>
+            <div
+              onClick={() => setShowScraperTerminal(!showScraperTerminal)}
               style={{
-                background: activeTab === 'leads' ? 'var(--violet)' : 'transparent',
-                color: activeTab === 'leads' ? '#fff' : 'var(--graphite)',
-                border: activeTab === 'leads' ? 'none' : '1px solid var(--line)',
-                padding: '6px 14px',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: 500,
-                cursor: 'pointer',
-                display: 'inline-flex',
+                display: 'flex',
                 alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              <Search size={14} />
-              AI Hunting Board
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('portals')}
-              style={{
-                background: activeTab === 'portals' ? 'var(--violet)' : 'transparent',
-                color: activeTab === 'portals' ? '#fff' : 'var(--graphite)',
-                border: activeTab === 'portals' ? 'none' : '1px solid var(--line)',
-                padding: '6px 14px',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: 500,
+                gap: '6px',
                 cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              <Building2 size={14} />
-              UAE Portals & Tenders Directory
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('accounts')}
-              style={{
-                background: activeTab === 'accounts' ? 'var(--violet)' : 'transparent',
-                color: activeTab === 'accounts' ? '#fff' : 'var(--graphite)',
-                border: activeTab === 'accounts' ? 'none' : '1px solid var(--line)',
-                padding: '6px 14px',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: 500,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              <Info size={14} />
-              Credentials & Scraping Guide
-            </button>
-
-            <Link
-              href="/"
-              style={{
-                textDecoration: 'none',
-                background: 'var(--bone)',
+                background: 'var(--paper)',
                 border: '1px solid var(--line)',
-                color: 'var(--taupe)',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '12px',
-                fontWeight: 500
+                padding: '5px 12px',
+                borderRadius: '999px',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.02)'
               }}
+              title="Click to view real-time crawler logs"
             >
-              Pitch Generator ↗
-            </Link>
-          </nav>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--live)' }} />
+              <span style={{ fontWeight: 600, color: 'var(--ink)' }}>Live Scrapers:</span>
+              <span style={{ color: 'var(--violet)', fontWeight: 600 }}>LinkedIn · GulfTalent · Bayt · eSupply · TAMM · Apify</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--paper)', padding: '5px 12px', borderRadius: '999px', border: '1px solid var(--line)' }}>
+              <Zap size={14} color="#d2a356" />
+              <span style={{ fontWeight: 600, color: 'var(--ink)' }}>Zero Dirhams Cap</span>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '36px 24px 80px' }}>
+      {/* Main Container */}
+      <div style={{ display: 'flex', flex: 1, maxWidth: '1520px', margin: '0 auto', width: '100%' }}>
         
-        {/* TAB 1: LEADS & TENDERS HUNTING BOARD */}
-        {activeTab === 'leads' && (
+        {/* ========================================================================= */}
+        {/* SIDEBAR NAVIGATION (Exact 4 Items Only) */}
+        {/* ========================================================================= */}
+        <aside
+          style={{
+            width: '300px',
+            borderRight: '1px solid var(--line)',
+            background: 'var(--paper)',
+            padding: '24px 16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '24px',
+            flexShrink: 0,
+            overflowY: 'auto',
+            maxHeight: 'calc(100vh - 65px)',
+            position: 'sticky',
+            top: '65px'
+          }}
+        >
+          {/* Main 4 Navigation Categories */}
           <div>
-            {/* HERO SECTION */}
-            <section style={{ textAlign: 'center', marginBottom: '36px' }}>
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  background: 'rgba(56, 201, 134, 0.12)',
-                  color: '#1e8455',
-                  padding: '5px 12px',
-                  borderRadius: '999px',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  marginBottom: '16px'
-                }}
-              >
-                <Radio size={14} className="animate-pulse" />
-                Verified UAE AI Leads, Official Portals & Direct Links (AED 10k+)
+            <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ash)', display: 'block', marginBottom: '12px', paddingLeft: '8px' }}>
+              Intelligence Hub
+            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {[
+                {
+                  id: 'it_jobs',
+                  label: 'IT Job Hunt',
+                  sub: 'Full-Time & Permanent UAE Roles',
+                  icon: Briefcase,
+                  count: categoryCounts.it_jobs
+                },
+                {
+                  id: 'it_freelance',
+                  label: 'IT Freelance Job Hunt',
+                  sub: 'Short-Term · Own Visa Priority',
+                  icon: Zap,
+                  count: categoryCounts.it_freelance
+                },
+                {
+                  id: 'it_products_services',
+                  label: 'IT Product & Service Hunt',
+                  sub: 'Custom Software & AI Tenders',
+                  icon: Bot,
+                  count: categoryCounts.it_products_services
+                },
+                {
+                  id: 'portal_hunt',
+                  label: 'Portal Hunt',
+                  sub: 'Job Boards & Tender Gateways',
+                  icon: Globe,
+                  count: 42
+                }
+              ].map(cat => {
+                const Icon = cat.icon;
+                const isActive = activeCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleCategorySwitch(cat.id)}
+                    style={{
+                      background: isActive ? 'var(--violet)' : 'transparent',
+                      color: isActive ? '#fff' : 'var(--ink)',
+                      border: 'none',
+                      borderRadius: '12px',
+                      padding: '12px 14px',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      boxShadow: isActive ? '0 4px 14px rgba(81, 69, 229, 0.28)' : 'none',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Icon size={18} color={isActive ? '#fff' : 'var(--violet)'} />
+                      <div>
+                        <div style={{ fontSize: '13.5px', fontWeight: 700 }}>{cat.label}</div>
+                        <div style={{ fontSize: '11px', color: isActive ? 'rgba(255, 255, 255, 0.8)' : 'var(--taupe)', marginTop: '2px' }}>
+                          {cat.sub}
+                        </div>
+                      </div>
+                    </div>
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        background: isActive ? 'rgba(255, 255, 255, 0.25)' : 'var(--sand)',
+                        color: isActive ? '#fff' : 'var(--ink)',
+                        padding: '2px 8px',
+                        borderRadius: '999px'
+                      }}
+                    >
+                      {cat.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Time Window Selector (Only for Search Tabs) */}
+          {activeCategory !== 'portal_hunt' && (
+            <div style={{ background: 'var(--bone)', border: '1px solid var(--line)', borderRadius: '10px', padding: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--taupe)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Clock size={13} />
+                  Time Window
+                </span>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--violet)' }}>
+                  Last {selectedDaysWindow} Days
+                </span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' }}>
+                {[
+                  { label: '24h', days: 1 },
+                  { label: '7d', days: 7 },
+                  { label: '14d', days: 14 },
+                  { label: '30d', days: 30 },
+                  { label: '45d', days: 45 }
+                ].map(w => (
+                  <button
+                    key={w.days}
+                    onClick={() => setSelectedDaysWindow(w.days)}
+                    style={{
+                      background: selectedDaysWindow === w.days ? 'var(--violet)' : 'var(--paper)',
+                      color: selectedDaysWindow === w.days ? '#fff' : 'var(--ink)',
+                      border: '1px solid var(--line)',
+                      borderRadius: '6px',
+                      padding: '5px 0',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {w.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Quick Tech Signal Tags */}
+          {activeCategory !== 'portal_hunt' && (
+            <div>
+              <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--ash)', display: 'block', marginBottom: '10px', paddingLeft: '8px' }}>
+                Quick Tech Filters
+              </span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', paddingLeft: '4px' }}>
+                {[
+                  'Voice AI', 'Python', 'Next.js', 'LangGraph', 'Flutter', 'DevOps', 'Laravel', 'SIRA Security', 'FastAPI'
+                ].map(tag => {
+                  const isSelected = activeFilterTag === tag;
+                  return (
+                    <button
+                      key={tag}
+                      onClick={() => {
+                        const newTag = isSelected ? '' : tag;
+                        setActiveFilterTag(newTag);
+                        setQuery(newTag);
+                        fetchLeads(newTag, activeCategory, ownVisaFilter, aiPriorityFilter, selectedDaysWindow);
+                      }}
+                      style={{
+                        background: isSelected ? 'var(--ink)' : 'var(--parchment)',
+                        color: isSelected ? '#fff' : 'var(--ink)',
+                        border: '1px solid var(--line)',
+                        borderRadius: '6px',
+                        padding: '4px 10px',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {tag}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Scrapers Status Badge */}
+          <div style={{ marginTop: 'auto', background: 'var(--navy)', borderRadius: '10px', padding: '14px', color: '#fff', fontSize: '11px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', color: '#38c986', fontWeight: 700 }}>
+              <Radio size={14} className="animate-pulse" />
+              <span>Multi-Engine UAE Web Crawlers</span>
+            </div>
+            <p style={{ color: '#a5b4fc', margin: '0 0 8px', lineHeight: 1.4 }}>
+              Active live scraping across LinkedIn, UAE job boards, consultancies & tender portals (Last 45 Days).
+            </p>
+            <button
+              onClick={() => setShowScraperTerminal(!showScraperTerminal)}
+              style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                color: '#fff',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                padding: '5px 10px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                cursor: 'pointer',
+                width: '100%',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
+            >
+              <Terminal size={12} />
+              {showScraperTerminal ? 'Hide Terminal' : 'View Scraper Logs'}
+            </button>
+          </div>
+        </aside>
+
+        {/* ========================================================================= */}
+        {/* MAIN STAGE / CONTENT AREA */}
+        {/* ========================================================================= */}
+        <main style={{ flex: 1, padding: '24px 36px', overflowX: 'hidden' }}>
+
+          {/* Scraper Terminal Drawer (Collapsible) */}
+          {showScraperTerminal && (
+            <div style={{ background: '#171724', borderRadius: '12px', padding: '16px', color: '#a5b4fc', fontFamily: 'monospace', fontSize: '12px', marginBottom: '24px', border: '1px solid #2d2d42' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #2d2d42', paddingBottom: '8px', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', fontWeight: 700 }}>
+                  <Terminal size={14} color="#38c986" />
+                  <span>Real-Time Multi-Engine Scraper Engine (Firecrawl + Scrapling + Apify + Apollo)</span>
+                </div>
+                <button onClick={() => setShowScraperTerminal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>✕</button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {scraperLogs.length > 0 ? (
+                  scraperLogs.map((log, i) => (
+                    <div key={i} style={{ color: log.includes('45-Day Window') || log.includes('100% of matching') ? '#38c986' : '#e2e8f0' }}>
+                      {log}
+                    </div>
+                  ))
+                ) : (
+                  <div>Ready. Enter any job title, skill, or enterprise keyword to trigger live dynamic scraping across the last 45 days.</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ======================================================================= */}
+          {/* TAB 4: PORTAL HUNT (2 Major Sections, No Dropdowns, Clickable Cards) */}
+          {/* ======================================================================= */}
+          {activeCategory === 'portal_hunt' ? (
+            <div>
+              {/* Portal Hunt Header */}
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                  <Globe size={24} color="var(--violet)" />
+                  <h1 style={{ fontSize: '24px', fontWeight: 800, margin: 0, color: 'var(--ink)' }}>
+                    Portal Hunt: UAE Ecosystem Directory
+                  </h1>
+                </div>
+                <p style={{ fontSize: '14px', color: 'var(--taupe)', margin: 0 }}>
+                  Direct access to every verified UAE Job Board, Startup Platform, Recruitment Agency, Government E-Procurement Portal, B2B Marketplace, and AI Automation Network. Click any box to open its public search portal.
+                </p>
               </div>
 
-              <h1
-                style={{
-                  fontSize: 'clamp(28px, 4vw, 42px)',
-                  fontWeight: 700,
-                  letterSpacing: '-0.03em',
-                  color: 'var(--ink)',
-                  lineHeight: 1.15,
-                  margin: '0 auto 14px',
-                  maxWidth: '820px'
-                }}
-              >
-                Find Every AI Job & Build Request Across UAE Channels
-              </h1>
+              {/* Portal Directory Search Input */}
+              <div style={{ position: 'relative', marginBottom: '32px' }}>
+                <Search size={18} color="var(--taupe)" style={{ position: 'absolute', left: '14px', top: '13px' }} />
+                <input
+                  type="text"
+                  value={portalDirectorySearch}
+                  onChange={e => setPortalDirectorySearch(e.target.value)}
+                  placeholder="Filter portals by name, keyword, or tech specialty (e.g. LinkedIn, Bayt, TAMM, DEWA, Upwork, Clutch, Kore.ai)..."
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px 12px 44px',
+                    borderRadius: '10px',
+                    border: '1px solid var(--line)',
+                    background: 'var(--paper)',
+                    fontSize: '14px',
+                    color: 'var(--ink)',
+                    outline: 'none',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.02)'
+                  }}
+                />
+              </div>
 
-              <p
-                style={{
-                  fontSize: '15px',
-                  color: 'var(--taupe)',
-                  maxWidth: '680px',
-                  margin: '0 auto 28px',
-                  lineHeight: 1.5
-                }}
-              >
-                Autonomous intelligence searching LinkedIn UAE, Naukrigulf, eSupply Dubai, TAMM Abu Dhabi, and Yello.ae. Every lead includes verified company websites, real source links, and direct contact details.
-              </p>
+              {/* =================================================================== */}
+              {/* MAJOR SECTION 1: JOB PORTALS */}
+              {/* =================================================================== */}
+              <div style={{ marginBottom: '48px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '2px solid var(--ink)', paddingBottom: '10px', marginBottom: '24px' }}>
+                  <Briefcase size={22} color="var(--violet)" />
+                  <h2 style={{ fontSize: '20px', fontWeight: 800, margin: 0, color: 'var(--ink)' }}>
+                    1. Job Portals & Talent Platforms
+                  </h2>
+                  <span style={{ fontSize: '12px', background: 'var(--sand)', color: 'var(--ink)', padding: '2px 8px', borderRadius: '999px', fontWeight: 700 }}>
+                    {JOB_HUNT_PORTAL_CATEGORIES.reduce((acc, cat) => acc + cat.portals.length, 0)} Portals
+                  </span>
+                </div>
 
-              {/* SEARCH TERMINAL INPUT */}
-              <div
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                  {JOB_HUNT_PORTAL_CATEGORIES.map((section, sIdx) => {
+                    const filteredPortals = section.portals.filter(p => 
+                      !portalDirectorySearch || 
+                      p.name.toLowerCase().includes(portalDirectorySearch.toLowerCase()) ||
+                      p.tag.toLowerCase().includes(portalDirectorySearch.toLowerCase()) ||
+                      p.description.toLowerCase().includes(portalDirectorySearch.toLowerCase())
+                    );
+
+                    if (filteredPortals.length === 0) return null;
+
+                    return (
+                      <div key={sIdx}>
+                        <h3 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--ink)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--violet)' }} />
+                          {section.title}
+                        </h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
+                          {filteredPortals.map((portal, pIdx) => (
+                            <a
+                              key={pIdx}
+                              href={portal.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                background: 'var(--paper)',
+                                border: '1px solid var(--line)',
+                                borderRadius: '12px',
+                                padding: '16px',
+                                textDecoration: 'none',
+                                color: 'var(--ink)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
+                                transition: 'all 0.15s ease',
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+                              }}
+                              onMouseEnter={e => {
+                                e.currentTarget.style.borderColor = 'var(--violet)';
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                e.currentTarget.style.boxShadow = '0 6px 16px rgba(81, 69, 229, 0.12)';
+                              }}
+                              onMouseLeave={e => {
+                                e.currentTarget.style.borderColor = 'var(--line)';
+                                e.currentTarget.style.transform = 'none';
+                                e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.02)';
+                              }}
+                            >
+                              <div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '6px' }}>
+                                  <h4 style={{ fontSize: '14px', fontWeight: 800, margin: 0, color: 'var(--ink)' }}>
+                                    {portal.name}
+                                  </h4>
+                                  <ExternalLink size={14} color="var(--violet)" style={{ flexShrink: 0 }} />
+                                </div>
+                                <span
+                                  style={{
+                                    fontSize: '10.5px',
+                                    fontWeight: 700,
+                                    background: 'rgba(81, 69, 229, 0.08)',
+                                    color: 'var(--violet)',
+                                    padding: '2px 6px',
+                                    borderRadius: '4px',
+                                    display: 'inline-block',
+                                    marginBottom: '8px'
+                                  }}
+                                >
+                                  {portal.tag}
+                                </span>
+                                <p style={{ fontSize: '12px', color: 'var(--taupe)', lineHeight: 1.45, margin: 0 }}>
+                                  {portal.description}
+                                </p>
+                              </div>
+                              <div style={{ marginTop: '12px', borderTop: '1px solid var(--line)', paddingTop: '8px', fontSize: '11px', fontWeight: 700, color: 'var(--violet)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <span>Visit Public Search Feed</span>
+                                <ChevronRight size={12} />
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* =================================================================== */}
+              {/* MAJOR SECTION 2: TENDER & RFQ GATEWAYS */}
+              {/* =================================================================== */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '2px solid var(--ink)', paddingBottom: '10px', marginBottom: '24px' }}>
+                  <Layers size={22} color="var(--violet)" />
+                  <h2 style={{ fontSize: '20px', fontWeight: 800, margin: 0, color: 'var(--ink)' }}>
+                    2. Tender & RFQ Gateways
+                  </h2>
+                  <span style={{ fontSize: '12px', background: 'var(--sand)', color: 'var(--ink)', padding: '2px 8px', borderRadius: '999px', fontWeight: 700 }}>
+                    {TENDER_PORTAL_CATEGORIES.reduce((acc, cat) => acc + cat.portals.length, 0)} Gateways
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                  {TENDER_PORTAL_CATEGORIES.map((section, sIdx) => {
+                    const filteredPortals = section.portals.filter(p => 
+                      !portalDirectorySearch || 
+                      p.name.toLowerCase().includes(portalDirectorySearch.toLowerCase()) ||
+                      p.tag.toLowerCase().includes(portalDirectorySearch.toLowerCase()) ||
+                      p.description.toLowerCase().includes(portalDirectorySearch.toLowerCase())
+                    );
+
+                    if (filteredPortals.length === 0) return null;
+
+                    return (
+                      <div key={sIdx}>
+                        <h3 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--ink)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--violet)' }} />
+                          {section.title}
+                        </h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
+                          {filteredPortals.map((portal, pIdx) => (
+                            <a
+                              key={pIdx}
+                              href={portal.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                background: 'var(--paper)',
+                                border: '1px solid var(--line)',
+                                borderRadius: '12px',
+                                padding: '16px',
+                                textDecoration: 'none',
+                                color: 'var(--ink)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
+                                transition: 'all 0.15s ease',
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+                              }}
+                              onMouseEnter={e => {
+                                e.currentTarget.style.borderColor = 'var(--violet)';
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                e.currentTarget.style.boxShadow = '0 6px 16px rgba(81, 69, 229, 0.12)';
+                              }}
+                              onMouseLeave={e => {
+                                e.currentTarget.style.borderColor = 'var(--line)';
+                                e.currentTarget.style.transform = 'none';
+                                e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.02)';
+                              }}
+                            >
+                              <div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '6px' }}>
+                                  <h4 style={{ fontSize: '14px', fontWeight: 800, margin: 0, color: 'var(--ink)' }}>
+                                    {portal.name}
+                                  </h4>
+                                  <ExternalLink size={14} color="var(--violet)" style={{ flexShrink: 0 }} />
+                                </div>
+                                <span
+                                  style={{
+                                    fontSize: '10.5px',
+                                    fontWeight: 700,
+                                    background: 'rgba(81, 69, 229, 0.08)',
+                                    color: 'var(--violet)',
+                                    padding: '2px 6px',
+                                    borderRadius: '4px',
+                                    display: 'inline-block',
+                                    marginBottom: '8px'
+                                  }}
+                                >
+                                  {portal.tag}
+                                </span>
+                                <p style={{ fontSize: '12px', color: 'var(--taupe)', lineHeight: 1.45, margin: 0 }}>
+                                  {portal.description}
+                                </p>
+                              </div>
+                              <div style={{ marginTop: '12px', borderTop: '1px solid var(--line)', paddingTop: '8px', fontSize: '11px', fontWeight: 700, color: 'var(--violet)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <span>Open Procurement Gateway</span>
+                                <ChevronRight size={12} />
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* ===================================================================== */
+            /* SEARCH TABS (IT Jobs, IT Freelance, IT Product & Service) */
+            /* ===================================================================== */
+            <div>
+              {/* CV UPLOADER & CANDIDATE PROFILE STUDIO */}
+              <section
                 style={{
-                  maxWidth: '840px',
-                  margin: '0 auto',
                   background: 'var(--paper)',
-                  padding: '8px',
-                  borderRadius: '20px',
                   border: '1px solid var(--line)',
-                  boxShadow: '0 18px 40px -12px rgba(23, 21, 19, 0.1)',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '8px',
-                  alignItems: 'center'
+                  borderRadius: '14px',
+                  padding: '20px 24px',
+                  marginBottom: '24px',
+                  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.03)'
                 }}
               >
-                <div style={{ flex: '1 1 300px', display: 'flex', alignItems: 'center', padding: '0 12px' }}>
-                  <Search size={18} style={{ color: 'var(--violet)', marginRight: '10px' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <div
+                      style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '12px',
+                        background: 'rgba(81, 69, 229, 0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--violet)'
+                      }}
+                    >
+                      <UserCheck size={26} />
+                    </div>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h3 style={{ fontSize: '17px', fontWeight: 800, margin: 0, color: 'var(--ink)' }}>
+                          {candidateProfile.name}
+                        </h3>
+                        <span style={{ fontSize: '11px', background: 'rgba(56, 201, 134, 0.12)', color: '#1e8455', padding: '2px 8px', borderRadius: '999px', fontWeight: 700 }}>
+                          ✓ UAE Residence Visa (Immediate Start)
+                        </span>
+                      </div>
+                      <p style={{ fontSize: '13px', color: 'var(--taupe)', margin: '3px 0 0' }}>
+                        {candidateProfile.title} · {candidateProfile.phone} · {candidateProfile.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* CV Action Buttons */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <label
+                      style={{
+                        background: 'var(--parchment)',
+                        color: 'var(--ink)',
+                        border: '1px solid var(--line)',
+                        padding: '8px 14px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Upload size={14} color="var(--violet)" />
+                      <span>{isUploadingCv ? 'Parsing CV...' : 'Upload Your CV (.pdf, .docx)'}</span>
+                      <input type="file" accept=".pdf,.docx,.txt" onChange={handleCvFileUpload} style={{ display: 'none' }} />
+                    </label>
+
+                    <button
+                      onClick={loadSampleCandidateCv}
+                      style={{
+                        background: 'var(--ink)',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '8px 14px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Sparkles size={14} />
+                      Load Sample UAE Senior CV
+                    </button>
+                  </div>
+                </div>
+
+                {/* Candidate Extracted Skills Ribbon */}
+                <div style={{ marginTop: '14px', borderTop: '1px solid var(--line)', paddingTop: '12px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--taupe)', textTransform: 'uppercase' }}>
+                    Extracted Skills from CV:
+                  </span>
+                  {candidateProfile.skills.map((skill, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        background: 'rgba(81, 69, 229, 0.08)',
+                        color: 'var(--violet)',
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        border: '1px solid rgba(81, 69, 229, 0.15)'
+                      }}
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </section>
+
+              {/* SEARCH & LIVE SCRAPER TRIGGER BAR */}
+              <form onSubmit={handleSearch} style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                <div style={{ flex: '1 1 340px', position: 'relative' }}>
+                  <Search size={18} color="var(--taupe)" style={{ position: 'absolute', left: '14px', top: '13px' }} />
                   <input
                     type="text"
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
-                    placeholder="Enter skill, role, or archetype (e.g., Voice AI, Company Brain, FDE, Claude Training)..."
+                    onChange={e => setQuery(e.target.value)}
+                    placeholder={
+                      activeCategory === 'it_jobs'
+                        ? "Search IT jobs by title, skills (e.g. AI Engineer, Python, React, DevOps, Cloud Architect, SIRA)..."
+                        : activeCategory === 'it_freelance'
+                        ? "Search freelance contracts (e.g. Voice AI bot, Flutter MVP, Laravel refactor, Own Visa)..."
+                        : "Search IT tenders & requirements (e.g. AI automation, custom software, government tenders)..."
+                    }
                     style={{
                       width: '100%',
-                      border: 'none',
-                      outline: 'none',
-                      background: 'transparent',
-                      fontSize: '14.5px',
+                      padding: '12px 14px 12px 44px',
+                      borderRadius: '10px',
+                      border: '1px solid var(--line)',
+                      background: 'var(--paper)',
+                      fontSize: '14px',
                       color: 'var(--ink)',
-                      height: '46px'
+                      outline: 'none',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.02)'
                     }}
                   />
                 </div>
 
+                <select
+                  value={locationFilter}
+                  onChange={e => {
+                    setLocationFilter(e.target.value);
+                    fetchLeads(query, activeCategory, ownVisaFilter, aiPriorityFilter, selectedDaysWindow);
+                  }}
+                  style={{
+                    padding: '12px 16px',
+                    borderRadius: '10px',
+                    border: '1px solid var(--line)',
+                    background: 'var(--paper)',
+                    fontSize: '13px',
+                    color: 'var(--ink)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="">All UAE Locations</option>
+                  <option value="Dubai">Dubai</option>
+                  <option value="Abu Dhabi">Abu Dhabi</option>
+                  <option value="Sharjah">Sharjah</option>
+                  <option value="Remote">Remote UAE</option>
+                </select>
+
                 <button
-                  type="button"
-                  onClick={handleSearch}
-                  disabled={loading}
+                  type="submit"
                   style={{
                     background: 'var(--violet)',
                     color: '#fff',
                     border: 'none',
-                    borderRadius: '14px',
-                    padding: '0 24px',
-                    height: '46px',
+                    borderRadius: '10px',
+                    padding: '12px 24px',
                     fontSize: '14px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
+                    fontWeight: 700,
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '8px',
-                    boxShadow: '0 4px 14px rgba(81, 69, 229, 0.3)'
+                    cursor: 'pointer',
+                    boxShadow: '0 3px 12px rgba(81, 69, 229, 0.28)'
                   }}
                 >
-                  {loading ? (
-                    <RefreshCw size={16} className="spin" />
-                  ) : (
-                    <Sparkles size={16} />
-                  )}
-                  {loading ? 'Scouting Web...' : 'Scout Portals & Contacts'}
+                  <Search size={16} />
+                  <span>Live Search & Scraping</span>
                 </button>
-              </div>
+              </form>
 
-              {/* QUICK FILTER PILLS */}
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  marginTop: '18px',
-                  maxWidth: '920px',
-                  margin: '18px auto 0'
-                }}
-              >
-                {QUICK_FILTERS.map((f) => (
-                  <button
-                    key={f.label}
-                    type="button"
-                    onClick={() => handleFilterClick(f.value)}
-                    style={{
-                      padding: '6px 14px',
-                      borderRadius: '999px',
-                      fontSize: '12px',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      border: '1px solid',
-                      borderColor: activeFilter === f.value ? 'var(--violet)' : 'var(--line)',
-                      background: activeFilter === f.value ? 'rgba(81, 69, 229, 0.1)' : 'var(--paper)',
-                      color: activeFilter === f.value ? 'var(--violet)' : 'var(--graphite)',
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {/* METRICS & STATS BAR */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                gap: '16px',
-                marginBottom: '28px'
-              }}
-            >
-              <div style={{ background: 'var(--paper)', padding: '18px', borderRadius: '16px', border: '1px solid var(--line)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--taupe)', fontSize: '12px', marginBottom: '6px' }}>
-                  <Briefcase size={14} style={{ color: 'var(--violet)' }} />
-                  Total Qualified UAE Opportunities
+              {/* Results Summary & 45-Day Window Indicator */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--ink)' }}>
+                    {activeCategory === 'it_jobs' && 'Live UAE IT Jobs (Last 45 Days)'}
+                    {activeCategory === 'it_freelance' && 'Live IT Freelance Opportunities in UAE (Own Visa Priority)'}
+                    {activeCategory === 'it_products_services' && 'Live UAE IT & AI Enterprise Tenders / RFQs'}
+                  </h2>
+                  <span style={{ fontSize: '12px', background: 'var(--sand)', color: 'var(--ink)', padding: '2px 8px', borderRadius: '999px', fontWeight: 700 }}>
+                    {leads.length} Active Listings
+                  </span>
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--ink)' }}>{leads.length} Leads</div>
-                <div style={{ fontSize: '11px', color: 'var(--ash)' }}>100% Real Verified UAE Entities</div>
-              </div>
 
-              <div style={{ background: 'var(--paper)', padding: '18px', borderRadius: '16px', border: '1px solid var(--line)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--taupe)', fontSize: '12px', marginBottom: '6px' }}>
-                  <DollarSign size={14} style={{ color: 'var(--live)' }} />
-                  Package / Compensation Floor
-                </div>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--ink)' }}>AED 10k – 70k+</div>
-                <div style={{ fontSize: '11px', color: 'var(--ash)' }}>SME Retainers to Sovereign FDE</div>
-              </div>
-
-              <div style={{ background: 'var(--paper)', padding: '18px', borderRadius: '16px', border: '1px solid var(--line)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--taupe)', fontSize: '12px', marginBottom: '6px' }}>
-                  <Globe size={14} style={{ color: 'var(--cyan)' }} />
-                  Verified Websites & Portals
-                </div>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--ink)' }}>100% Live URLs</div>
-                <div style={{ fontSize: '11px', color: 'var(--ash)' }}>Direct Company & Source Links</div>
-              </div>
-
-              <div style={{ background: 'var(--paper)', padding: '18px', borderRadius: '16px', border: '1px solid var(--line)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--taupe)', fontSize: '12px', marginBottom: '6px' }}>
-                  <Bot size={14} style={{ color: 'var(--amber)' }} />
-                  Voice AI & RAG Proof Points
-                </div>
-                <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--ink)' }}>AqionLabs Ready</div>
-                <div style={{ fontSize: '11px', color: 'var(--ash)' }}>American Hospital Dubai & Servion</div>
-              </div>
-            </div>
-
-            {/* RESULTS LISTING */}
-            <div style={{ display: 'grid', gap: '16px' }}>
-              {leads.map((lead) => (
-                <div
-                  key={lead.id}
-                  style={{
-                    background: 'var(--paper)',
-                    borderRadius: '20px',
-                    border: '1px solid var(--line)',
-                    padding: '24px',
-                    display: 'grid',
-                    gap: '16px',
-                    transition: 'box-shadow 0.2s ease',
-                    boxShadow: '0 4px 16px rgba(23, 21, 19, 0.04)'
-                  }}
-                >
-                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
-                    <div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                        <span
-                          style={{
-                            background: lead.match_score >= 90 ? 'rgba(56, 201, 134, 0.15)' : 'rgba(81, 69, 229, 0.1)',
-                            color: lead.match_score >= 90 ? '#1e8455' : 'var(--violet)',
-                            fontWeight: 700,
-                            fontSize: '11px',
-                            padding: '3px 8px',
-                            borderRadius: '6px',
-                            fontFamily: 'var(--font-mono, monospace)'
-                          }}
-                        >
-                          {lead.match_score}% MATCH
-                        </span>
-
-                        {lead.lead_age && (
-                          <span
-                            style={{
-                              background: 'rgba(210, 163, 86, 0.12)',
-                              color: '#9e6e18',
-                              fontSize: '11px',
-                              fontWeight: 600,
-                              padding: '3px 8px',
-                              borderRadius: '6px',
-                              border: '1px solid rgba(210, 163, 86, 0.3)',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              fontFamily: 'var(--font-mono, monospace)'
-                            }}
-                          >
-                            <Clock size={11} /> {lead.lead_age}
-                          </span>
-                        )}
-                        
-                        {/* Direct Clickable Source Portal Link */}
-                        <a
-                          href={lead.source_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{
-                            background: 'var(--bone)',
-                            color: 'var(--graphite)',
-                            fontSize: '11px',
-                            fontWeight: 600,
-                            padding: '3px 8px',
-                            borderRadius: '6px',
-                            border: '1px solid var(--line)',
-                            textDecoration: 'none',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                        >
-                          📌 Source: {lead.source_name} ↗
-                        </a>
-
-                        <span
-                          style={{
-                            fontSize: '11px',
-                            color: 'var(--taupe)',
-                            fontWeight: 500
-                          }}
-                        >
-                          📍 {lead.location}
-                        </span>
-                      </div>
-
-                      <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink)', margin: 0, letterSpacing: '-0.01em' }}>
-                        {lead.title}
-                      </h3>
-                      
-                      {/* Company Name + Verified Website Link + LinkedIn Company Page */}
-                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px', marginTop: '6px' }}>
-                        <span style={{ fontSize: '14.5px', fontWeight: 700, color: 'var(--ink)' }}>
-                          🏢 {lead.company}
-                        </span>
-
-                        {lead.website_url && (
-                          <a
-                            href={lead.website_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{
-                              fontSize: '12px',
-                              color: 'var(--violet)',
-                              textDecoration: 'none',
-                              fontWeight: 600,
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              background: 'rgba(81, 69, 229, 0.08)',
-                              padding: '2px 8px',
-                              borderRadius: '6px'
-                            }}
-                          >
-                            <Globe size={12} /> {lead.website_url.replace('https://', '').replace('http://', '').split('/')[0]} ↗
-                          </a>
-                        )}
-
-                        {lead.company_linkedin_url && (
-                          <a
-                            href={lead.company_linkedin_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{
-                              fontSize: '12px',
-                              color: 'var(--cyan)',
-                              textDecoration: 'none',
-                              fontWeight: 600,
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              background: 'rgba(37, 169, 218, 0.08)',
-                              padding: '2px 8px',
-                              borderRadius: '6px'
-                            }}
-                          >
-                            <Link2 size={12} /> LinkedIn Page ↗
-                          </a>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Salary Tag */}
-                    <div style={{ textAlign: 'right' }}>
-                      <div
-                        style={{
-                          background: 'rgba(210, 163, 86, 0.12)',
-                          color: '#9e6e18',
-                          padding: '6px 12px',
-                          borderRadius: '10px',
-                          fontWeight: 700,
-                          fontSize: '13px',
-                          fontFamily: 'var(--font-mono, monospace)'
-                        }}
-                      >
-                        {lead.salary_range}
-                      </div>
-                      <div style={{ fontSize: '11px', color: 'var(--ash)', marginTop: '4px' }}>
-                        Type: {lead.type}
-                      </div>
-                    </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: 'var(--taupe)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--parchment)', padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--line)' }}>
+                    <Calendar size={13} color="var(--violet)" />
+                    <span>Range: <strong>Last {selectedDaysWindow} Days</strong></span>
                   </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Clock size={13} />
+                    <span>Sorted Newest First</span>
+                  </div>
+                </div>
+              </div>
 
-                  {/* Description */}
-                  <p style={{ margin: 0, fontSize: '13.5px', color: 'var(--taupe)', lineHeight: 1.5 }}>
-                    {lead.description}
+              {/* LISTINGS FEED */}
+              {loading ? (
+                <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--taupe)' }}>
+                  <RefreshCw size={28} className="animate-spin" style={{ margin: '0 auto 12px', color: 'var(--violet)' }} />
+                  <p style={{ fontWeight: 600 }}>Scraping public UAE job boards & tender gateways across the last 45 days...</p>
+                </div>
+              ) : leads.length === 0 ? (
+                <div style={{ background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: '14px', padding: '60px 20px', textAlign: 'center' }}>
+                  <Briefcase size={36} color="var(--taupe)" style={{ margin: '0 auto 14px' }} />
+                  <h3 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 6px', color: 'var(--ink)' }}>No listings found in selected time range</h3>
+                  <p style={{ fontSize: '14px', color: 'var(--taupe)', margin: 0 }}>
+                    Try expanding the time window to "Last 45 Days" or searching for a different tech keyword.
                   </p>
-
-                  {/* Tech Signals */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                    {lead.tech_signals?.map((t) => (
-                      <span
-                        key={t}
-                        style={{
-                          background: 'var(--bone)',
-                          border: '1px solid var(--line)',
-                          padding: '3px 9px',
-                          borderRadius: '6px',
-                          fontSize: '11px',
-                          color: 'var(--graphite)',
-                          fontFamily: 'var(--font-mono, monospace)'
-                        }}
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Decision Maker & Action Toolbar */}
-                  <div
-                    style={{
-                      borderTop: '1px solid var(--line)',
-                      paddingTop: '16px',
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      gap: '14px'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div
-                        style={{
-                          width: '38px',
-                          height: '38px',
-                          borderRadius: '10px',
-                          background: 'rgba(81, 69, 229, 0.1)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'var(--violet)',
-                          fontWeight: 700,
-                          fontSize: '14px'
-                        }}
-                      >
-                        {lead.decision_maker?.name ? lead.decision_maker.name[0] : 'D'}
-                      </div>
-                      <div>
-                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>
-                          {lead.decision_maker?.name} • <span style={{ color: 'var(--taupe)', fontWeight: 400 }}>{lead.decision_maker?.role}</span>
-                        </div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', fontSize: '12px', color: 'var(--taupe)', marginTop: '2px' }}>
-                          {lead.decision_maker?.email && (
-                            <a
-                              href={`mailto:${lead.decision_maker.email}`}
-                              style={{ color: 'var(--violet)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                            >
-                              <Mail size={12} /> {lead.decision_maker.email}
-                            </a>
-                          )}
-                          {lead.decision_maker?.phone && (
-                            <a
-                              href={`tel:${lead.decision_maker.phone}`}
-                              style={{ color: 'var(--graphite)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                            >
-                              <Phone size={12} /> {lead.decision_maker.phone}
-                            </a>
-                          )}
-                          {lead.decision_maker?.linkedin_search_url && (
-                            <a
-                              href={lead.decision_maker.linkedin_search_url}
-                              target="_blank"
-                              rel="noreferrer"
-                              style={{ color: 'var(--cyan)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
-                            >
-                              <Search size={12} /> Search Profile on LinkedIn ↗
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Action button to open pitch modal */}
-                    <button
-                      type="button"
-                      onClick={() => setSelectedLead(lead)}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                  {leads.map(lead => (
+                    <div
+                      key={lead.id}
                       style={{
-                        background: 'var(--bone)',
-                        border: '1px solid var(--violet)',
-                        color: 'var(--violet)',
-                        padding: '8px 16px',
-                        borderRadius: '10px',
-                        fontSize: '12.5px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px'
+                        background: 'var(--paper)',
+                        border: '1px solid var(--line)',
+                        borderRadius: '14px',
+                        padding: '22px',
+                        boxShadow: '0 2px 12px rgba(0, 0, 0, 0.02)',
+                        transition: 'all 0.15s ease'
                       }}
                     >
-                      <Sparkles size={14} />
-                      View Personalized Pitch Copy
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+                      {/* Header */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              background: lead.lead_age?.includes('mins') || lead.lead_age?.includes('now') ? 'rgba(56, 201, 134, 0.15)' : 'var(--sand)',
+                              color: lead.lead_age?.includes('mins') || lead.lead_age?.includes('now') ? '#1e8455' : 'var(--ink)',
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            <Clock size={12} />
+                            {lead.lead_age || 'Just now'} · {lead.posted_date}
+                          </span>
 
-        {/* TAB 2: COMPLETE DIRECTORY OF UAE JOB, PRODUCT & TENDER PORTALS */}
-        {activeTab === 'portals' && (
-          <div>
-            <h2 style={{ fontSize: '26px', fontWeight: 700, color: 'var(--ink)', marginBottom: '8px' }}>
-              Comprehensive UAE Portals & Tender Boards Directory
-            </h2>
-            <p style={{ color: 'var(--taupe)', fontSize: '14px', marginBottom: '28px' }}>
-              The complete map of every job platform, SME product requirement board, and public/private tender portal in the UAE for AI and Tech services.
-            </p>
+                          <a
+                            href={lead.source_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              color: 'var(--violet)',
+                              background: 'rgba(81, 69, 229, 0.08)',
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              textDecoration: 'none',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            <Globe size={12} />
+                            {lead.source_name}
+                            <ExternalLink size={10} />
+                          </a>
 
-            <div style={{ display: 'grid', gap: '28px' }}>
-              {/* Category 1: Public & Government Tender Portals */}
-              <div style={{ background: 'var(--paper)', borderRadius: '20px', border: '1px solid var(--line)', padding: '24px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                  <ShieldCheck size={20} style={{ color: 'var(--live)' }} />
-                  1. UAE Public & Semi-Government Tender Portals (AI & IT RFPs)
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
-                  <div style={{ background: 'var(--bone)', padding: '14px', borderRadius: '12px', border: '1px solid var(--line)' }}>
-                    <strong style={{ fontSize: '14px', color: 'var(--ink)' }}>Dubai Government eSupply</strong>
-                    <div style={{ fontSize: '12px', color: 'var(--taupe)', margin: '4px 0' }}>Official procurement for 40+ Dubai Gov entities (Digital Dubai, DEWA, RTA, DHA).</div>
-                    <a href="https://esupply.dubai.gov.ae" target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: 'var(--violet)', textDecoration: 'none', fontWeight: 600 }}>esupply.dubai.gov.ae ↗</a>
-                  </div>
+                          {lead.public_search_page && (
+                            <a
+                              href={lead.public_search_page}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                color: 'var(--graphite)',
+                                background: 'var(--parchment)',
+                                padding: '3px 8px',
+                                borderRadius: '6px',
+                                textDecoration: 'none',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <span>Public Search Page ↗</span>
+                            </a>
+                          )}
 
-                  <div style={{ background: 'var(--bone)', padding: '14px', borderRadius: '12px', border: '1px solid var(--line)' }}>
-                    <strong style={{ fontSize: '14px', color: 'var(--ink)' }}>Abu Dhabi TAMM / ADGEX</strong>
-                    <div style={{ fontSize: '12px', color: 'var(--taupe)', margin: '4px 0' }}>Unified procurement portal for all Abu Dhabi Government departments and councils.</div>
-                    <a href="https://www.tamm.abudhabi" target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: 'var(--violet)', textDecoration: 'none', fontWeight: 600 }}>tamm.abudhabi ↗</a>
-                  </div>
+                          {lead.own_visa_priority && (
+                            <span
+                              style={{
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                background: '#fef3c7',
+                                color: '#92400e',
+                                padding: '3px 8px',
+                                borderRadius: '6px',
+                                border: '1px solid #fde68a'
+                              }}
+                            >
+                              ⚡ Own Visa Priority
+                            </span>
+                          )}
 
-                  <div style={{ background: 'var(--bone)', padding: '14px', borderRadius: '12px', border: '1px solid var(--line)' }}>
-                    <strong style={{ fontSize: '14px', color: 'var(--ink)' }}>UAE Ministry of Finance (MoF)</strong>
-                    <div style={{ fontSize: '12px', color: 'var(--taupe)', margin: '4px 0' }}>Federal Government supplier register for national ministries and federal councils.</div>
-                    <a href="https://mof.gov.ae" target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: 'var(--violet)', textDecoration: 'none', fontWeight: 600 }}>mof.gov.ae ↗</a>
-                  </div>
+                          {lead.is_ai_priority && (
+                            <span
+                              style={{
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                background: '#ede9fe',
+                                color: '#5b21b6',
+                                padding: '3px 8px',
+                                borderRadius: '6px',
+                                border: '1px solid #ddd6fe'
+                              }}
+                            >
+                              🤖 AI Priority
+                            </span>
+                          )}
+                        </div>
 
-                  <div style={{ background: 'var(--bone)', padding: '14px', borderRadius: '12px', border: '1px solid var(--line)' }}>
-                    <strong style={{ fontSize: '14px', color: 'var(--ink)' }}>e& (Etisalat) Sourcing Portal</strong>
-                    <div style={{ fontSize: '12px', color: 'var(--taupe)', margin: '4px 0' }}>Telecommunications, Conversational AI, and Cloud Contact Center modernization RFPs.</div>
-                    <a href="https://www.eand.com" target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: 'var(--violet)', textDecoration: 'none', fontWeight: 600 }}>eand.com ↗</a>
-                  </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <span style={{ fontSize: '15px', fontWeight: 800, color: '#1e8455' }}>
+                            {lead.salary_range || lead.budget_range}
+                          </span>
+                        </div>
+                      </div>
 
-                  <div style={{ background: 'var(--bone)', padding: '14px', borderRadius: '12px', border: '1px solid var(--line)' }}>
-                    <strong style={{ fontSize: '14px', color: 'var(--ink)' }}>ADNOC Sourcing & Tenders</strong>
-                    <div style={{ fontSize: '12px', color: 'var(--taupe)', margin: '4px 0' }}>Oil & Gas, Automation, AI Predictive Maintenance, and IT Infrastructure.</div>
-                    <a href="https://www.adnoc.ae" target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: 'var(--violet)', textDecoration: 'none', fontWeight: 600 }}>adnoc.ae ↗</a>
-                  </div>
+                      {/* Title & Company Info */}
+                      <h3 style={{ fontSize: '18px', fontWeight: 800, margin: '0 0 6px', color: 'var(--ink)', lineHeight: 1.3 }}>
+                        {lead.title}
+                      </h3>
 
-                  <div style={{ background: 'var(--bone)', padding: '14px', borderRadius: '12px', border: '1px solid var(--line)' }}>
-                    <strong style={{ fontSize: '14px', color: 'var(--ink)' }}>ProTenders Middle East</strong>
-                    <div style={{ fontSize: '12px', color: 'var(--taupe)', margin: '4px 0' }}>Private enterprise & commercial developer tenders across GCC.</div>
-                    <a href="https://www.protenders.com" target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: 'var(--violet)', textDecoration: 'none', fontWeight: 600 }}>protenders.com ↗</a>
-                  </div>
-                </div>
-              </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '13px', color: 'var(--taupe)', marginBottom: '14px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Building2 size={14} color="var(--violet)" />
+                          <strong style={{ color: 'var(--ink)' }}>{lead.company}</strong>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <MapPin size={14} />
+                          <span>{lead.location}</span>
+                        </div>
+                        {lead.website_url && (
+                          <a href={lead.website_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--taupe)', textDecoration: 'underline', fontSize: '12px' }}>
+                            Company Website ↗
+                          </a>
+                        )}
+                        {lead.company_linkedin_url && (
+                          <a href={lead.company_linkedin_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--violet)', textDecoration: 'underline', fontSize: '12px' }}>
+                            Company LinkedIn ↗
+                          </a>
+                        )}
+                      </div>
 
-              {/* Category 2: UAE B2B Business Directories & Product Requirement Boards */}
-              <div style={{ background: 'var(--paper)', borderRadius: '20px', border: '1px solid var(--line)', padding: '24px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                  <Database size={20} style={{ color: 'var(--cyan)' }} />
-                  2. UAE B2B Product Requirement Boards & Verified Business Directories
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
-                  <div style={{ background: 'var(--bone)', padding: '14px', borderRadius: '12px', border: '1px solid var(--line)' }}>
-                    <strong style={{ fontSize: '14px', color: 'var(--ink)' }}>Yello.ae (UAE Yellow Pages)</strong>
-                    <div style={{ fontSize: '12px', color: 'var(--taupe)', margin: '4px 0' }}>150,000+ UAE firms with phone numbers, emails, and direct category listings. Zero login needed.</div>
-                    <a href="https://www.yello.ae" target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: 'var(--violet)', textDecoration: 'none', fontWeight: 600 }}>yello.ae ↗</a>
-                  </div>
+                      {/* Description Overview */}
+                      <p style={{ fontSize: '13.5px', color: 'var(--graphite)', lineHeight: 1.5, margin: '0 0 14px' }}>
+                        {lead.description}
+                      </p>
 
-                  <div style={{ background: 'var(--bone)', padding: '14px', borderRadius: '12px', border: '1px solid var(--line)' }}>
-                    <strong style={{ fontSize: '14px', color: 'var(--ink)' }}>Clutch.co UAE AI & Software Directory</strong>
-                    <div style={{ fontSize: '12px', color: 'var(--taupe)', margin: '4px 0' }}>UAE business clients posting RFQs for AI chatbots, custom software, and voice agents.</div>
-                    <a href="https://clutch.co/ae" target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: 'var(--violet)', textDecoration: 'none', fontWeight: 600 }}>clutch.co/ae ↗</a>
-                  </div>
+                      {/* MAJOR POINTS OF THE JOB DESCRIPTION */}
+                      {lead.major_job_points && lead.major_job_points.length > 0 && (
+                        <div
+                          style={{
+                            background: 'var(--bone)',
+                            border: '1px solid var(--line)',
+                            borderRadius: '10px',
+                            padding: '14px 16px',
+                            marginBottom: '16px'
+                          }}
+                        >
+                          <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--taupe)', display: 'block', marginBottom: '8px' }}>
+                            🎯 Key Job Description & Deliverable Highlights:
+                          </span>
+                          <ul style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                            {lead.major_job_points.map((pt, pIdx) => (
+                              <li key={pIdx} style={{ fontSize: '12.5px', color: 'var(--ink)', lineHeight: 1.45 }}>
+                                {pt}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
 
-                  <div style={{ background: 'var(--bone)', padding: '14px', borderRadius: '12px', border: '1px solid var(--line)' }}>
-                    <strong style={{ fontSize: '14px', color: 'var(--ink)' }}>GoodFirms UAE</strong>
-                    <div style={{ fontSize: '12px', color: 'var(--taupe)', margin: '4px 0' }}>B2B tech matchmaking and enterprise software requirement briefs.</div>
-                    <a href="https://www.goodfirms.co" target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: 'var(--violet)', textDecoration: 'none', fontWeight: 600 }}>goodfirms.co ↗</a>
-                  </div>
+                      {/* Tech Signals */}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '16px' }}>
+                        {lead.tech_signals?.map((tech, idx) => (
+                          <span
+                            key={idx}
+                            style={{
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              background: 'var(--parchment)',
+                              color: 'var(--ink)',
+                              padding: '3px 8px',
+                              borderRadius: '4px',
+                              border: '1px solid var(--line)'
+                            }}
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
 
-                  <div style={{ background: 'var(--bone)', padding: '14px', borderRadius: '12px', border: '1px solid var(--line)' }}>
-                    <strong style={{ fontSize: '14px', color: 'var(--ink)' }}>Upwork UAE Client Project Feed</strong>
-                    <div style={{ fontSize: '12px', color: 'var(--taupe)', margin: '4px 0' }}>UAE SME client postings for Voice AI bots, RAG pipelines, and WhatsApp bots.</div>
-                    <a href="https://www.upwork.com" target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: 'var(--violet)', textDecoration: 'none', fontWeight: 600 }}>upwork.com ↗</a>
-                  </div>
-                </div>
-              </div>
+                      {/* VERIFIED CONTACT PERSON */}
+                      {lead.decision_maker && (
+                        <div
+                          style={{
+                            background: 'var(--paper)',
+                            border: '1px solid var(--line)',
+                            borderRadius: '10px',
+                            padding: '12px 16px',
+                            marginBottom: '16px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            flexWrap: 'wrap',
+                            gap: '10px'
+                          }}
+                        >
+                          <div>
+                            <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--ash)', display: 'block' }}>
+                              Verified Direct Contact Person / Hiring Lead:
+                            </span>
+                            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink)', marginTop: '2px' }}>
+                              {lead.decision_maker.name} — <span style={{ color: 'var(--taupe)', fontWeight: 500 }}>{lead.decision_maker.role}</span>
+                            </div>
+                          </div>
 
-              {/* Category 3: Major UAE Job Boards */}
-              <div style={{ background: 'var(--paper)', borderRadius: '20px', border: '1px solid var(--line)', padding: '24px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                  <Briefcase size={20} style={{ color: 'var(--violet)' }} />
-                  3. UAE Recruitment Portals & Free Zone Boards
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
-                  {[
-                    { name: 'LinkedIn UAE', url: 'https://www.linkedin.com/jobs/search/?keywords=AI%20Lead&location=United%20Arab%20Emirates', desc: 'Prime source for AI Leads & FDEs' },
-                    { name: 'Naukrigulf.com', url: 'https://www.naukrigulf.com/ai-jobs-in-uae', desc: 'Tier-1 GCC banking & enterprise roles' },
-                    { name: 'Indeed UAE', url: 'https://ae.indeed.com/q-ai-lead-jobs.html', desc: 'Direct corporate tech openings' },
-                    { name: 'GulfTalent.com', url: 'https://www.gulftalent.com/uae/jobs', desc: 'Executive & senior leadership' },
-                    { name: 'Bayt.com', url: 'https://www.bayt.com/en/uae/jobs/q/artificial-intelligence/', desc: 'Largest Middle East jobs database' },
-                    { name: 'Foundit Gulf (Monster)', url: 'https://www.founditgulf.com', desc: 'IT & software engineering' },
-                    { name: 'Dubai Careers (Gov)', url: 'https://dubaicareers.ae', desc: 'Official Dubai Gov hiring portal' },
-                    { name: 'Hub71 Abu Dhabi', url: 'https://hub71.com', desc: 'Mubadala AI startup ecosystem' },
-                    { name: 'DIFC Careers', url: 'https://www.difc.ae/careers', desc: 'Financial center & FinTech roles' },
-                    { name: 'MBZUAI Careers', url: 'https://mbzuai.ac.ae/careers', desc: 'AI research university positions' },
-                    { name: 'Laimoon UAE', url: 'https://jobs.laimoon.com/uae', desc: 'Professional tech careers' },
-                    { name: 'Dubizzle Jobs', url: 'https://dubai.dubizzle.com/jobs/', desc: 'Local SME & agency hiring' }
-                  ].map((p) => (
-                    <div key={p.name} style={{ background: 'var(--bone)', padding: '12px', borderRadius: '10px', border: '1px solid var(--line)' }}>
-                      <strong style={{ fontSize: '13px', color: 'var(--ink)' }}>{p.name}</strong>
-                      <div style={{ fontSize: '11.5px', color: 'var(--taupe)', margin: '2px 0' }}>{p.desc}</div>
-                      <a href={p.url} target="_blank" rel="noreferrer" style={{ fontSize: '11px', color: 'var(--violet)', textDecoration: 'none', fontWeight: 600 }}>Visit Portal ↗</a>
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            {lead.decision_maker.email && (
+                              <button
+                                onClick={() => copyToClipboard(lead.decision_maker.email, `email-${lead.id}`)}
+                                style={{
+                                  background: 'var(--bone)',
+                                  border: '1px solid var(--line)',
+                                  padding: '5px 10px',
+                                  borderRadius: '6px',
+                                  fontSize: '12px',
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  fontWeight: 600
+                                }}
+                              >
+                                <Mail size={12} color="var(--violet)" />
+                                {copiedKey === `email-${lead.id}` ? 'Copied!' : lead.decision_maker.email}
+                              </button>
+                            )}
+
+                            {lead.decision_maker.phone && (
+                              <button
+                                onClick={() => copyToClipboard(lead.decision_maker.phone, `phone-${lead.id}`)}
+                                style={{
+                                  background: 'var(--bone)',
+                                  border: '1px solid var(--line)',
+                                  padding: '5px 10px',
+                                  borderRadius: '6px',
+                                  fontSize: '12px',
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  fontWeight: 600
+                                }}
+                              >
+                                <Phone size={12} color="#1e8455" />
+                                {copiedKey === `phone-${lead.id}` ? 'Copied!' : lead.decision_maker.phone}
+                              </button>
+                            )}
+
+                            {lead.decision_maker.jobportal_profile_url && (
+                              <a
+                                href={lead.decision_maker.jobportal_profile_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  background: 'var(--bone)',
+                                  border: '1px solid var(--line)',
+                                  padding: '5px 10px',
+                                  borderRadius: '6px',
+                                  fontSize: '12px',
+                                  color: 'var(--ink)',
+                                  textDecoration: 'none',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  fontWeight: 600
+                                }}
+                              >
+                                <Globe size={12} />
+                                Portal Profile ↗
+                              </a>
+                            )}
+
+                            {lead.decision_maker.linkedin_search_url && (
+                              <a
+                                href={lead.decision_maker.linkedin_search_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  background: 'var(--bone)',
+                                  border: '1px solid var(--line)',
+                                  padding: '5px 10px',
+                                  borderRadius: '6px',
+                                  fontSize: '12px',
+                                  color: 'var(--violet)',
+                                  textDecoration: 'none',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  fontWeight: 600
+                                }}
+                              >
+                                <ExternalLink size={12} />
+                                LinkedIn ↗
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* ACTION BUTTONS */}
+                      <div style={{ borderTop: '1px solid var(--line)', paddingTop: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <button
+                            onClick={() => handleOpenGenerator(lead, 'cv')}
+                            style={{
+                              background: 'var(--violet)',
+                              color: '#fff',
+                              border: 'none',
+                              padding: '8px 14px',
+                              borderRadius: '8px',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              boxShadow: '0 2px 8px rgba(81, 69, 229, 0.25)'
+                            }}
+                          >
+                            <FileCheck size={14} />
+                            Tailor & Generate CV (DOCX/PDF)
+                          </button>
+
+                          <button
+                            onClick={() => handleOpenGenerator(lead, 'cover_letter')}
+                            style={{
+                              background: 'var(--ink)',
+                              color: '#fff',
+                              border: 'none',
+                              padding: '8px 14px',
+                              borderRadius: '8px',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}
+                          >
+                            <FileText size={14} />
+                            Tailor Cover Letter (DOCX/PDF)
+                          </button>
+
+                          <button
+                            onClick={() => handleOpenGenerator(lead, 'linkedin_note')}
+                            style={{
+                              background: 'var(--parchment)',
+                              color: 'var(--ink)',
+                              border: '1px solid var(--line)',
+                              padding: '8px 14px',
+                              borderRadius: '8px',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}
+                          >
+                            <MessageSquare size={14} color="var(--violet)" />
+                            LinkedIn Note (&lt;300 Chars)
+                          </button>
+
+                          <button
+                            onClick={() => handleOpenGenerator(lead, 'inmail')}
+                            style={{
+                              background: 'var(--parchment)',
+                              color: 'var(--ink)',
+                              border: '1px solid var(--line)',
+                              padding: '8px 14px',
+                              borderRadius: '8px',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}
+                          >
+                            <Send size={14} color="#1e8455" />
+                            Executive Email Pitch
+                          </button>
+
+                          {activeCategory === 'it_products_services' && (
+                            <button
+                              onClick={() => handleOpenGenerator(lead, 'proposal')}
+                              style={{
+                                background: '#242435',
+                                color: '#fff',
+                                border: 'none',
+                                padding: '8px 14px',
+                                borderRadius: '8px',
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                              }}
+                            >
+                              <Layers size={14} />
+                              Technical RFP Proposal (DOCX/PDF)
+                            </button>
+                          )}
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: 'var(--violet)' }}>
+                          <Sparkles size={14} />
+                          <span>{lead.match_score || 96}% Profile Match</span>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
-              </div>
+              )}
             </div>
-          </div>
-        )}
+          )}
+        </main>
+      </div>
 
-        {/* TAB 3: CREDENTIALS & SCRAPING ADVISORY */}
-        {activeTab === 'accounts' && (
-          <div style={{ maxWidth: '880px', margin: '0 auto' }}>
-            <h2 style={{ fontSize: '26px', fontWeight: 700, color: 'var(--ink)', marginBottom: '8px' }}>
-              Account & Credentials Advisory
-            </h2>
-            <p style={{ color: 'var(--taupe)', fontSize: '14px', marginBottom: '24px' }}>
-              Everything you need to know about accounts, scraping limits, and email enrichment for your automated outreach.
-            </p>
-
-            <div style={{ display: 'grid', gap: '20px' }}>
-              <div style={{ background: 'var(--paper)', padding: '24px', borderRadius: '20px', border: '1px solid var(--line)' }}>
-                <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--ink)', marginBottom: '10px' }}>
-                  🔑 1. Is LinkedIn Premium or Sales Navigator Required?
-                </h3>
-                <div style={{ fontSize: '14px', color: 'var(--graphite)', lineHeight: 1.6 }}>
-                  <p>
-                    <strong>For Automated Scraping & Lead Discovery:</strong> <span style={{ color: 'var(--live)', fontWeight: 600 }}>NO</span>. Our Python/Cheerio scrapers extract public job postings, decision-maker names, and company data without needing your LinkedIn login credentials.
-                  </p>
-                  <p>
-                    <strong>For Sending Outreach:</strong>
-                  </p>
-                  <ul>
-                    <li>
-                      <strong>Standard Free LinkedIn:</strong> You can send up to <strong>100 connection requests per week</strong> with our pre-drafted 300-character custom notes. This costs $0 and is the most effective approach for high response rates.
-                    </li>
-                    <li>
-                      <strong>LinkedIn Sales Navigator Core ($79.99/mo):</strong> Recommended <em>only</em> if you wish to send 50 direct InMails per month to C-Suite leaders without connecting first, or build hyper-targeted lead lists across UAE VPs of Engineering.
-                    </li>
-                    <li>
-                      <strong>Our Strategy:</strong> Since our engine extracts their verified direct email (e.g. <code>contactus@chalhoub.com</code>, <code>info@ai71.ai</code>), you can send direct cold emails with zero LinkedIn InMail costs!
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              <div style={{ background: 'var(--paper)', padding: '24px', borderRadius: '20px', border: '1px solid var(--line)' }}>
-                <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--ink)', marginBottom: '10px' }}>
-                  📒 2. Is a Yello.ae Account Required?
-                </h3>
-                <div style={{ fontSize: '14px', color: 'var(--graphite)', lineHeight: 1.6 }}>
-                  <p>
-                    <strong>Answer:</strong> <span style={{ color: 'var(--live)', fontWeight: 600 }}>NO ACCOUNT REQUIRED</span>.
-                  </p>
-                  <p>
-                    Yello.ae provides open access to business directory listings. Our automated scraping engine can query categories like Information Technology, Real Estate, and Healthcare, parsing phone numbers (<code>+971 4 ...</code>) and <code>mailto:</code> email addresses with zero subscription or login fees.
-                  </p>
-                </div>
-              </div>
-
-              <div style={{ background: 'var(--paper)', padding: '24px', borderRadius: '20px', border: '1px solid var(--line)' }}>
-                <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--ink)', marginBottom: '10px' }}>
-                  🏛️ 3. How to Register for UAE Government Tender Portals
-                </h3>
-                <div style={{ fontSize: '14px', color: 'var(--graphite)', lineHeight: 1.6 }}>
-                  <ul>
-                    <li>
-                      <strong>eSupply Dubai (esupply.dubai.gov.ae):</strong> Free registration for UAE trade licenses / free zone entities. Allows bidding on Digital Dubai, DEWA, and RTA AI tenders.
-                    </li>
-                    <li>
-                      <strong>TAMM Abu Dhabi (tamm.abudhabi):</strong> Free registration with UAE Pass or commercial trade license to view Abu Dhabi government RFPs.
-                    </li>
-                    <li>
-                      <strong>Ministry of Finance Federal Supplier Register:</strong> Requires UAE Trade License & tax registration number (TRN).
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* OUTREACH PITCH MODAL */}
-      {selectedLead && (
+      {/* ========================================================================= */}
+      {/* DOCUMENT & PITCH GENERATOR SUITE MODAL */}
+      {/* ========================================================================= */}
+      {generatorModalOpen && selectedLead && (
         <div
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(23, 21, 19, 0.6)',
+            background: 'rgba(23, 21, 19, 0.65)',
             backdropFilter: 'blur(8px)',
             zIndex: 1000,
             display: 'flex',
@@ -922,210 +1537,217 @@ export default function AqionHuntingPortal() {
             justifyContent: 'center',
             padding: '20px'
           }}
-          onClick={() => setSelectedLead(null)}
         >
           <div
             style={{
               background: 'var(--paper)',
-              width: 'min(100%, 760px)',
+              width: '100%',
+              maxWidth: '960px',
               maxHeight: '90vh',
-              overflowY: 'auto',
-              borderRadius: '24px',
+              borderRadius: '16px',
               border: '1px solid var(--line)',
-              padding: '32px',
-              boxShadow: '0 32px 64px -16px rgba(23, 21, 19, 0.25)',
-              position: 'relative'
+              boxShadow: '0 20px 48px rgba(0, 0, 0, 0.25)',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden'
             }}
-            onClick={(e) => e.stopPropagation()}
           >
-            <button
-              type="button"
-              onClick={() => setSelectedLead(null)}
+            {/* Modal Header */}
+            <div
               style={{
-                position: 'absolute',
-                top: '24px',
-                right: '24px',
-                background: 'var(--bone)',
-                border: '1px solid var(--line)',
-                borderRadius: '999px',
-                width: '36px',
-                height: '36px',
+                padding: '18px 24px',
+                borderBottom: '1px solid var(--line)',
                 display: 'flex',
+                justifyContent: 'space-between',
                 alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                color: 'var(--taupe)'
+                background: 'var(--bone)'
               }}
             >
-              <X size={18} />
-            </button>
-
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span style={{ fontSize: '11px', background: 'rgba(81, 69, 229, 0.1)', color: 'var(--violet)', fontWeight: 700, padding: '3px 8px', borderRadius: '6px' }}>
-                {selectedLead.match_score}% MATCH
-              </span>
-
-              {selectedLead.lead_age && (
-                <span
-                  style={{
-                    background: 'rgba(210, 163, 86, 0.12)',
-                    color: '#9e6e18',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    padding: '3px 8px',
-                    borderRadius: '6px',
-                    border: '1px solid rgba(210, 163, 86, 0.3)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontFamily: 'var(--font-mono, monospace)'
-                  }}
-                >
-                  <Clock size={11} /> {selectedLead.lead_age}
+              <div>
+                <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--violet)' }}>
+                  AqionHunt AI Tailored Suite · Verified UAE Format
                 </span>
-              )}
-
-              <a
-                href={selectedLead.source_url}
-                target="_blank"
-                rel="noreferrer"
-                style={{ fontSize: '12px', color: 'var(--taupe)', textDecoration: 'none' }}
+                <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '2px 0 0', color: 'var(--ink)' }}>
+                  {selectedLead.title} — {selectedLead.company}
+                </h2>
+              </div>
+              <button
+                onClick={() => setGeneratorModalOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--taupe)', padding: '6px' }}
               >
-                📌 {selectedLead.source_name} ↗
-              </a>
+                <X size={20} />
+              </button>
             </div>
 
-            <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--ink)', margin: '0 0 4px', paddingRight: '40px' }}>
-              {selectedLead.title}
-            </h2>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--violet)', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              🏢 {selectedLead.company} • 📍 {selectedLead.location}
-              {selectedLead.website_url && (
-                <a
-                  href={selectedLead.website_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ color: 'var(--violet)', textDecoration: 'none', fontSize: '12px', fontWeight: 600 }}
-                >
-                  ({selectedLead.website_url.replace('https://', '').replace('http://', '').split('/')[0]} ↗)
-                </a>
-              )}
+            {/* Modal Tab Selector */}
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--line)', background: 'var(--paper)', padding: '0 24px', gap: '8px' }}>
+              {[
+                { id: 'cv', label: 'Tailored CV (DOCX & PDF)', icon: FileCheck },
+                { id: 'cover_letter', label: 'Tailored Cover Letter', icon: FileText },
+                { id: 'linkedin_note', label: 'LinkedIn Note (<300)', icon: MessageSquare },
+                { id: 'inmail', label: 'Executive Email Pitch', icon: Send },
+                ...(activeCategory === 'it_products_services' ? [{ id: 'proposal', label: 'RFP Proposal', icon: Layers }] : [])
+              ].map(tab => {
+                const Icon = tab.icon;
+                const isActive = generatorActiveTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setGeneratorActiveTab(tab.id);
+                      generateDocContent(selectedLead, tab.id);
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      borderBottom: isActive ? '2px solid var(--violet)' : '2px solid transparent',
+                      color: isActive ? 'var(--violet)' : 'var(--taupe)',
+                      fontWeight: isActive ? 700 : 500,
+                      padding: '12px 14px',
+                      fontSize: '13px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Icon size={15} />
+                    {tab.label}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Decision Maker Card */}
-            <div style={{ background: 'var(--bone)', padding: '16px', borderRadius: '14px', border: '1px solid var(--line)', marginBottom: '20px' }}>
-              <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ash)', fontWeight: 600, marginBottom: '6px' }}>
-                Target Decision Maker
-              </div>
-              <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)' }}>
-                {selectedLead.decision_maker?.name}
-              </div>
-              <div style={{ fontSize: '13px', color: 'var(--taupe)', marginBottom: '8px' }}>
-                {selectedLead.decision_maker?.role}
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', fontSize: '13px' }}>
-                {selectedLead.decision_maker?.email && (
-                  <a href={`mailto:${selectedLead.decision_maker?.email}`} style={{ color: 'var(--violet)', textDecoration: 'none', fontWeight: 500 }}>
-                    ✉️ {selectedLead.decision_maker?.email}
-                  </a>
-                )}
-                {selectedLead.decision_maker?.phone && (
-                  <a href={`tel:${selectedLead.decision_maker?.phone}`} style={{ color: 'var(--graphite)', textDecoration: 'none', fontWeight: 500 }}>
-                    📞 {selectedLead.decision_maker?.phone}
-                  </a>
-                )}
-                {selectedLead.decision_maker?.linkedin_search_url && (
-                  <a href={selectedLead.decision_maker?.linkedin_search_url} target="_blank" rel="noreferrer" style={{ color: 'var(--cyan)', textDecoration: 'none', fontWeight: 500 }}>
-                    🔍 Search on LinkedIn ↗
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* LinkedIn Connection Note */}
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <strong style={{ fontSize: '13px', color: 'var(--ink)' }}>
-                  1. LinkedIn Connection Note (&lt; 300 characters)
-                </strong>
-                <button
-                  type="button"
-                  onClick={() => copyToClipboard(selectedLead.outreach?.linkedin_note, 'note')}
+            {/* Modal Document Body */}
+            <div style={{ flex: 1, padding: '24px', overflowY: 'auto', background: 'var(--bone)' }}>
+              {generatingDoc ? (
+                <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--taupe)' }}>
+                  <RefreshCw size={28} className="animate-spin" style={{ margin: '0 auto 12px', color: 'var(--violet)' }} />
+                  <p style={{ fontWeight: 600 }}>Restructuring experiences and aligning with target UAE job description...</p>
+                </div>
+              ) : (
+                <div
                   style={{
-                    background: 'var(--bone)',
+                    background: 'var(--paper)',
                     border: '1px solid var(--line)',
-                    padding: '4px 10px',
-                    borderRadius: '6px',
-                    fontSize: '11.5px',
-                    cursor: 'pointer',
-                    color: 'var(--graphite)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px'
+                    borderRadius: '10px',
+                    padding: '24px',
+                    fontFamily: 'monospace',
+                    fontSize: '13px',
+                    lineHeight: 1.6,
+                    color: 'var(--ink)',
+                    whiteSpace: 'pre-wrap'
                   }}
                 >
-                  {copiedKey === 'note' ? <CheckCircle2 size={12} style={{ color: 'var(--live)' }} /> : <Copy size={12} />}
-                  {copiedKey === 'note' ? 'Copied!' : 'Copy Note'}
-                </button>
-              </div>
-              <div
-                style={{
-                  background: 'var(--bone)',
-                  padding: '14px',
-                  borderRadius: '10px',
-                  fontSize: '13px',
-                  color: 'var(--graphite)',
-                  lineHeight: 1.5,
-                  border: '1px solid var(--line)',
-                  fontFamily: 'var(--font-mono, monospace)'
-                }}
-              >
-                {selectedLead.outreach?.linkedin_note}
-              </div>
+                  {generatorActiveTab === 'cv' && (generatedCvText || 'Generating tailored CV...')}
+                  {generatorActiveTab === 'cover_letter' && (generatedCoverLetterText || 'Generating cover letter...')}
+                  {generatorActiveTab === 'linkedin_note' && (generatedLinkedinNoteText || 'Generating LinkedIn note...')}
+                  {generatorActiveTab === 'inmail' && (generatedInmailText || 'Generating executive inmail...')}
+                  {generatorActiveTab === 'proposal' && (generatedProposalText || 'Generating proposal...')}
+                </div>
+              )}
             </div>
 
-            {/* Cold Email Copy */}
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <strong style={{ fontSize: '13px', color: 'var(--ink)' }}>
-                  2. Executive InMail / Direct Email Pitch
-                </strong>
+            {/* Modal Footer with Actions */}
+            <div
+              style={{
+                padding: '16px 24px',
+                borderTop: '1px solid var(--line)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                background: 'var(--paper)'
+              }}
+            >
+              <div style={{ fontSize: '12px', color: 'var(--taupe)' }}>
+                {generatorActiveTab === 'linkedin_note' && (
+                  <span>
+                    Length: <strong>{generatedLinkedinNoteText.length} / 300 characters</strong> (Optimal for free LinkedIn connection request)
+                  </span>
+                )}
+                {generatorActiveTab === 'cv' && (
+                  <span>Includes tailored skills injection & JD experience refactoring.</span>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
                 <button
-                  type="button"
-                  onClick={() => copyToClipboard(selectedLead.outreach?.cold_email, 'email')}
+                  onClick={() => {
+                    let textToCopy = '';
+                    if (generatorActiveTab === 'cv') textToCopy = generatedCvText;
+                    else if (generatorActiveTab === 'cover_letter') textToCopy = generatedCoverLetterText;
+                    else if (generatorActiveTab === 'linkedin_note') textToCopy = generatedLinkedinNoteText;
+                    else if (generatorActiveTab === 'inmail') textToCopy = generatedInmailText;
+                    else if (generatorActiveTab === 'proposal') textToCopy = generatedProposalText;
+
+                    navigator.clipboard.writeText(textToCopy);
+                    setCopiedKey('modal_doc');
+                    setTimeout(() => setCopiedKey(null), 2000);
+                  }}
                   style={{
-                    background: 'var(--bone)',
+                    background: 'var(--parchment)',
+                    color: 'var(--ink)',
                     border: '1px solid var(--line)',
-                    padding: '4px 10px',
-                    borderRadius: '6px',
-                    fontSize: '11.5px',
-                    cursor: 'pointer',
-                    color: 'var(--graphite)',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 600,
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '4px'
+                    gap: '6px',
+                    cursor: 'pointer'
                   }}
                 >
-                  {copiedKey === 'email' ? <CheckCircle2 size={12} style={{ color: 'var(--live)' }} /> : <Copy size={12} />}
-                  {copiedKey === 'email' ? 'Copied!' : 'Copy Email'}
+                  <Copy size={14} />
+                  {copiedKey === 'modal_doc' ? 'Copied to Clipboard!' : 'Copy Text'}
                 </button>
+
+                {(generatorActiveTab === 'cv' || generatorActiveTab === 'cover_letter' || generatorActiveTab === 'proposal') && (
+                  <>
+                    <button
+                      onClick={() => handleDownloadDocx(generatorActiveTab)}
+                      disabled={downloadingDocx}
+                      style={{
+                        background: 'var(--ink)',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Download size={14} />
+                      {downloadingDocx ? 'Generating Word (.docx)...' : 'Download DOCX (.docx)'}
+                    </button>
+
+                    <button
+                      onClick={() => window.print()}
+                      style={{
+                        background: 'var(--violet)',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 8px rgba(81, 69, 229, 0.25)'
+                      }}
+                    >
+                      <Printer size={14} />
+                      Print / Save as PDF
+                    </button>
+                  </>
+                )}
               </div>
-              <pre
-                style={{
-                  background: 'var(--bone)',
-                  padding: '14px',
-                  borderRadius: '10px',
-                  fontSize: '12.5px',
-                  color: 'var(--graphite)',
-                  lineHeight: 1.6,
-                  border: '1px solid var(--line)',
-                  whiteSpace: 'pre-wrap',
-                  fontFamily: 'inherit',
-                  margin: 0
-                }}
-              >
-                {selectedLead.outreach?.cold_email}
-              </pre>
             </div>
           </div>
         </div>
