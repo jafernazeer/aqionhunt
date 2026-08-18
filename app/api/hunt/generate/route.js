@@ -1,55 +1,67 @@
 import { NextResponse } from 'next/server';
 
+const DEFAULT_EXPERIENCE = [
+  {
+    role: "Head of AI & Lead Solutions Architect",
+    company: "AqionLabs",
+    location: "Dubai, UAE",
+    duration: "2023 - Present",
+    highlights: [
+      "Architected low-latency sub-600ms Voice AI agents using Vapi, Deepgram, and Cartesia integrated with Twilio SIP telephony.",
+      "Designed enterprise RAG and multi-agent systems using LangGraph, pgvector, and Claude 3.5 Sonnet for UAE enterprises.",
+      "Built and scaled Next.js 15 full-stack client dashboards with high-performance real-time WebSocket communication."
+    ]
+  },
+  {
+    role: "Senior Telecom & IT Infrastructure Specialist",
+    company: "American Hospital Dubai",
+    location: "Dubai, UAE",
+    duration: "2021 - 2023",
+    highlights: [
+      "Led enterprise unified communication and telephony infrastructure serving 2,500+ clinical and administrative users.",
+      "Managed IP telephony, Cisco call managers, SIP trunk routing, and high-availability server clusters with 99.99% uptime.",
+      "Collaborated with UAE regulatory frameworks and healthcare compliance standards."
+    ]
+  },
+  {
+    role: "Systems & Cloud Engineer",
+    company: "Servion Global Solutions",
+    location: "Dubai, UAE",
+    duration: "2018 - 2021",
+    highlights: [
+      "Delivered enterprise customer experience and contact center integrations for Fortune 500 clients (Tesla, Bank of America).",
+      "Implemented automated speech recognition (ASR) pipelines and CRM integrations across omni-channel contact centers."
+    ]
+  }
+];
+
 export async function POST(request) {
   try {
     const body = await request.json();
     const { 
       type = 'cv', 
       lead = {}, 
-      candidate = {
-        name: "Mohammed Jafer Nazeer",
-        title: "Senior AI Engineer & Full-Stack Solutions Architect",
-        email: "mohammedjafer123@outlook.com",
-        phone: "+971 58 849 9663",
-        location: "Dubai, UAE (Valid UAE Residence Visa)",
-        linkedin: "https://www.linkedin.com/in/mohammedjafer/",
-        skills: ["AI Voice Agents", "Python", "Next.js", "LangChain", "FastAPI", "PostgreSQL", "Docker", "AWS", "Twilio SIP", "REST/GraphQL"],
-        experience: [
-          {
-            role: "Head of AI & Lead Solutions Architect",
-            company: "AqionLabs",
-            location: "Dubai, UAE",
-            duration: "2023 - Present",
-            highlights: [
-              "Architected low-latency sub-600ms Voice AI agents using Vapi, Deepgram, and Cartesia integrated with Twilio SIP telephony.",
-              "Designed enterprise RAG and multi-agent systems using LangGraph, pgvector, and Claude 3.5 Sonnet for UAE enterprises.",
-              "Built and scaled Next.js 15 full-stack client dashboards with high-performance real-time WebSocket communication."
-            ]
-          },
-          {
-            role: "Senior Telecom & IT Infrastructure Specialist",
-            company: "American Hospital Dubai",
-            location: "Dubai, UAE",
-            duration: "2021 - 2023",
-            highlights: [
-              "Led enterprise unified communication and telephony infrastructure serving 2,500+ clinical and administrative users.",
-              "Managed IP telephony, Cisco call managers, SIP trunk routing, and high-availability server clusters with 99.99% uptime.",
-              "Collaborated with UAE regulatory frameworks and healthcare compliance standards."
-            ]
-          },
-          {
-            role: "Systems & Cloud Engineer",
-            company: "Servion Global Solutions",
-            location: "Dubai, UAE",
-            duration: "2018 - 2021",
-            highlights: [
-              "Delivered enterprise customer experience and contact center integrations for Fortune 500 clients (Tesla, Bank of America).",
-              "Implemented automated speech recognition (ASR) pipelines and CRM integrations across omni-channel contact centers."
-            ]
-          }
-        ]
-      }
+      candidate: rawCandidate = {} 
     } = body;
+
+    const candidate = {
+      name: rawCandidate.name || "Mohammed Jafer Nazeer",
+      title: rawCandidate.title || "Senior AI Engineer & Full-Stack Solutions Architect",
+      email: rawCandidate.email || "mohammedjafer123@outlook.com",
+      phone: rawCandidate.phone || "+971 58 849 9663",
+      location: rawCandidate.location || "Dubai, UAE (Valid UAE Residence Visa)",
+      linkedin: rawCandidate.linkedin || "https://www.linkedin.com/in/mohammedjafer/",
+      skills: Array.isArray(rawCandidate.skills) && rawCandidate.skills.length > 0
+        ? rawCandidate.skills
+        : ["AI Voice Agents", "Python", "Next.js", "LangChain", "FastAPI", "PostgreSQL", "Docker", "AWS", "Twilio SIP", "REST/GraphQL"],
+      experience: Array.isArray(rawCandidate.experience) && rawCandidate.experience.length > 0
+        ? rawCandidate.experience
+        : DEFAULT_EXPERIENCE
+    };
+
+    const exp0 = candidate.experience[0] || DEFAULT_EXPERIENCE[0];
+    const exp1 = candidate.experience[1] || DEFAULT_EXPERIENCE[1];
+    const exp2 = candidate.experience[2] || DEFAULT_EXPERIENCE[2];
 
     const jobTitle = lead.title || "Senior IT / AI Specialist";
     const company = lead.company || "UAE Enterprise";
@@ -81,21 +93,21 @@ ${allSkills.map(s => `• ${s}`).join('\n')}
 
 ## PROFESSIONAL EXPERIENCE
 
-### ${candidate.experience[0].role} — ${candidate.experience[0].company} (${candidate.experience[0].location})
-*${candidate.experience[0].duration}*
+### ${exp0.role} — ${exp0.company} (${exp0.location})
+*${exp0.duration}*
 • Spearheaded end-to-end development of production ${jobTitle} capabilities directly utilizing ${requiredSkills.slice(0, 3).join(', ')}.
 • Designed high-availability architectures and microservices, reducing deployment latency by 45% and ensuring seamless integration with enterprise systems.
 • Championed technical delivery, code review standards, and automated CI/CD pipelines compliant with UAE cybersecurity standards.
 • Engineered client-tailored workflows in ${allSkills.slice(0, 4).join(', ')}, delivering high-impact solutions for regional stakeholders.
 
-### ${candidate.experience[1].role} — ${candidate.experience[1].company} (${candidate.experience[1].location})
-*${candidate.experience[1].duration}*
+### ${exp1.role} — ${exp1.company} (${exp1.location})
+*${exp1.duration}*
 • Managed high-scale IT infrastructure and mission-critical communications supporting 2,500+ active enterprise users with 99.99% SLA.
 • Integrated enterprise backend services with ${requiredSkills[0] || 'Cloud API'} infrastructure, automating monitoring and fault-tolerance.
 • Formulated standard operating procedures (SOP) and coordinated with cross-functional technical teams for timely project milestones.
 
-### ${candidate.experience[2].role} — ${candidate.experience[2].company} (${candidate.experience[2].location})
-*${candidate.experience[2].duration}*
+### ${exp2.role} — ${exp2.company} (${exp2.location})
+*${exp2.duration}*
 • Delivered enterprise-grade technical solutions for global accounts (Tesla, Bank of America), ensuring zero-downtime migrations.
 • Developed automated data pipelines and customized interfaces utilizing ${requiredSkills[1] || 'Python & Modern APIs'}.
 
